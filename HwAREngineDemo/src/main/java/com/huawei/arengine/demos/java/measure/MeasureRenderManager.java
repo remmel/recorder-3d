@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
+import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
 import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARFrame;
@@ -32,10 +33,6 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
 
     private static final float PROJ_MATRIX_FAR = 100.0f;
 
-    private static final float MATRIX_SCALE_SX = -1.0f;
-
-    private static final float MATRIX_SCALE_SY = -1.0f;
-
     private TextureDisplay mTextureDisplay = new TextureDisplay();
 
     private ARSession mSession;
@@ -45,6 +42,8 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
     private Context mContext;
 
     TextView depthTextView;
+
+    private DisplayRotationManager mDisplayRotationManager;
 
     public MeasureRenderManager(Activity activity, Context context) {
         mActivity = activity;
@@ -65,6 +64,19 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         mSession = arSession;
     }
 
+    /**
+     * Set the DisplayRotationManage object, which will be used in onSurfaceChanged and onDrawFrame.
+     *
+     * @param displayRotationManager DisplayRotationManage is a customized object.
+     */
+    public void setDisplayRotationManage(DisplayRotationManager displayRotationManager) {
+        if (displayRotationManager == null) {
+            Log.e(TAG, "SetDisplayRotationManage error, displayRotationManage is null!");
+            return;
+        }
+        mDisplayRotationManager = displayRotationManager;
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the window color.
@@ -76,6 +88,7 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mTextureDisplay.onSurfaceChanged(width, height);
         GLES20.glViewport(0, 0, width, height);
+        mDisplayRotationManager.updateViewportRotation(width, height);
     }
 
     @Override
@@ -85,16 +98,13 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         if (mSession == null) {
             return;
         }
+        if (mDisplayRotationManager.getDeviceRotation()) {
+            mDisplayRotationManager.updateArSessionDisplayGeometry(mSession);
+        }
 
         try {
             mSession.setCameraTextureName(mTextureDisplay.getExternalTextureId());
             ARFrame arFrame = mSession.update();
-            ARCamera arCamera = arFrame.getCamera();
-
-            // The size of the projection matrix is 4 * 4.
-            float[] projectionMatrix = new float[16];
-
-            arCamera.getProjectionMatrix(projectionMatrix, PROJ_MATRIX_OFFSET, PROJ_MATRIX_NEAR, PROJ_MATRIX_FAR);
             mTextureDisplay.onDrawFrame(arFrame);
             updateDepthInfo(arFrame);
 

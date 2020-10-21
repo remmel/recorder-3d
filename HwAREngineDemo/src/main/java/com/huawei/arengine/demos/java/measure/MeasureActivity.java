@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.huawei.arengine.demos.R;
+import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.hiar.ARConfigBase;
 import com.huawei.hiar.AREnginesApk;
 import com.huawei.hiar.ARSession;
@@ -30,6 +31,8 @@ public class MeasureActivity extends Activity {
 
     private MeasureRenderManager mMeasureRenderManager;
 
+    private DisplayRotationManager mDisplayRotationManager;
+
     private String message = null;
 
     private boolean isRemindInstall = false;
@@ -40,6 +43,7 @@ public class MeasureActivity extends Activity {
         setContentView(R.layout.measure_activity_main);
 
         mSurfaceView = findViewById(R.id.measureSurfaceview);
+        mDisplayRotationManager = new DisplayRotationManager(this);
 
         mSurfaceView.setPreserveEGLContextOnPause(true);
         mSurfaceView.setEGLContextClientVersion(OPENGLES_VERSION);
@@ -49,6 +53,8 @@ public class MeasureActivity extends Activity {
         mSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 
         mMeasureRenderManager = new MeasureRenderManager(this, this);
+        mMeasureRenderManager.setDisplayRotationManage(mDisplayRotationManager);
+
         mSurfaceView.setRenderer(mMeasureRenderManager);
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
@@ -89,6 +95,7 @@ public class MeasureActivity extends Activity {
             mArSession = null;
             return;
         }
+        mDisplayRotationManager.registerDisplayListener();
         mSurfaceView.onResume();
     }
 
@@ -140,6 +147,7 @@ public class MeasureActivity extends Activity {
         Log.i(TAG, "onPause start.");
         super.onPause();
         if (mArSession != null) {
+            mDisplayRotationManager.unregisterDisplayListener();
             mSurfaceView.onPause();
             mArSession.pause();
         }

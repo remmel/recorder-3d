@@ -9,12 +9,10 @@ I added 2 features :
 
 TODO:
 - display something to understand where is measured the depth (like coloring the central pixel)
-- something strange happens when rotating the camera
 
 ## Recorder
 
 TODO:
-- something strange happens when rotating the camera
 - save pose
 - save depth to a more reusable format
 - understand why it's not possible to save image_preview in a better resolution

@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
+import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
 import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARFrame;
@@ -41,6 +42,8 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     private Context mContext;
 
+    private DisplayRotationManager mDisplayRotationManager;
+
     long numFrame = 0;
 
     private File dir; //folder where the rgb & depth images will be saved
@@ -69,6 +72,19 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         mSession = arSession;
     }
 
+    /**
+     * Set the DisplayRotationManage object, which will be used in onSurfaceChanged and onDrawFrame.
+     *
+     * @param displayRotationManager DisplayRotationManage is a customized object.
+     */
+    public void setDisplayRotationManage(DisplayRotationManager displayRotationManager) {
+        if (displayRotationManager == null) {
+            Log.e(TAG, "SetDisplayRotationManage error, displayRotationManage is null!");
+            return;
+        }
+        mDisplayRotationManager = displayRotationManager;
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the window color.
@@ -80,6 +96,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         mTextureDisplay.onSurfaceChanged(width, height);
         GLES20.glViewport(0, 0, width, height);
+        mDisplayRotationManager.updateViewportRotation(width, height);
     }
 
     @Override
@@ -88,6 +105,9 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         if (mSession == null) {
             return;
+        }
+        if (mDisplayRotationManager.getDeviceRotation()) {
+            mDisplayRotationManager.updateArSessionDisplayGeometry(mSession);
         }
 
         try {

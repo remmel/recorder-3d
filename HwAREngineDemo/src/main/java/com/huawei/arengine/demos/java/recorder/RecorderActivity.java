@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.huawei.arengine.demos.R;
+import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.hiar.ARConfigBase;
 import com.huawei.hiar.AREnginesApk;
 import com.huawei.hiar.ARSession;
@@ -30,6 +31,8 @@ public class RecorderActivity extends Activity {
 
     private RecorderRenderManager mRecorderRenderManager;
 
+    private DisplayRotationManager mDisplayRotationManager;
+
     private String message = null;
 
     private boolean isRemindInstall = false;
@@ -40,6 +43,7 @@ public class RecorderActivity extends Activity {
         setContentView(R.layout.recorder_activity_main);
 
         mSurfaceView = findViewById(R.id.recorderSurfaceview);
+        mDisplayRotationManager = new DisplayRotationManager(this);
 
         mSurfaceView.setPreserveEGLContextOnPause(true);
         mSurfaceView.setEGLContextClientVersion(OPENGLES_VERSION);
@@ -49,6 +53,8 @@ public class RecorderActivity extends Activity {
         mSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 
         mRecorderRenderManager = new RecorderRenderManager(this, this);
+        mRecorderRenderManager.setDisplayRotationManage(mDisplayRotationManager);
+
         mSurfaceView.setRenderer(mRecorderRenderManager);
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
@@ -91,6 +97,7 @@ public class RecorderActivity extends Activity {
             mArSession = null;
             return;
         }
+        mDisplayRotationManager.registerDisplayListener();
         mSurfaceView.onResume();
     }
 
@@ -142,6 +149,7 @@ public class RecorderActivity extends Activity {
         Log.i(TAG, "onPause start.");
         super.onPause();
         if (mArSession != null) {
+            mDisplayRotationManager.unregisterDisplayListener();
             mSurfaceView.onPause();
             mArSession.pause();
         }
