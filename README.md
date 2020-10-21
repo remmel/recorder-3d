@@ -7,10 +7,18 @@ I added 2 features :
 
 ## Measure
 
+![Screenshot_resized25](doc\Screenshot_resized25.jpg)
+
 TODO:
 - display something to understand where is measured the depth (like coloring the central pixel)
 
 ## Recorder
+
+![](doc\00000012_preview_image_resized.jpg) ![](doc\00000012_depth.png)
+
+Features :
+- Save fancy depth images
+- Save rgb images (1440x1080)
 
 TODO:
 - save pose
