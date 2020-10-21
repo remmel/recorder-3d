@@ -3,6 +3,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
 
+
     <application
         android:resizeableActivity="false"
         android:allowBackup="false"
@@ -43,6 +44,14 @@
             android:configChanges="orientation|screenSize"></activity>
         <activity
             android:name="com.huawei.arengine.demos.java.hand.HandActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:configChanges="orientation|screenSize"></activity>
+        <activity
+            android:name="com.huawei.arengine.demos.java.measure.MeasureActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:configChanges="orientation|screenSize"></activity>
+        <activity
+            android:name="com.huawei.arengine.demos.java.recorder.RecorderActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:configChanges="orientation|screenSize"></activity>
 

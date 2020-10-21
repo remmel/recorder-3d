@@ -28,6 +28,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.huawei.arengine.demos.common.PermissionManager;
+import com.huawei.arengine.demos.java.measure.MeasureActivity;
+import com.huawei.arengine.demos.java.recorder.RecorderActivity;
 
 /**
  * This class provides the permission verification and sub-AR example redirection functions.
@@ -100,6 +102,12 @@ public class ChooseActivity extends Activity {
             case R.id.btn_hand:
                 startActivity(new Intent(this,
                     com.huawei.arengine.demos.java.hand.HandActivity.class));
+                break;
+            case R.id.btn_measure:
+                startActivity(new Intent(this, MeasureActivity.class));
+                break;
+            case R.id.btn_recorder:
+                startActivity(new Intent(this, RecorderActivity.class));
                 break;
             default:
                 Log.e(TAG, "onClick error!");
