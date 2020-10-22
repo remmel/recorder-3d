@@ -12,7 +12,6 @@ import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
-import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARFrame;
 import com.huawei.hiar.ARSession;
 
@@ -26,12 +25,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class MeasureRenderManager implements GLSurfaceView.Renderer {
 
     private static final String TAG = MeasureRenderManager.class.getSimpleName();
-
-    private static final int PROJ_MATRIX_OFFSET = 0;
-
-    private static final float PROJ_MATRIX_NEAR = 0.1f;
-
-    private static final float PROJ_MATRIX_FAR = 100.0f;
 
     private TextureDisplay mTextureDisplay = new TextureDisplay();
 
@@ -131,6 +124,6 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         short depthConfidence = (short) ((depthSample >> 13) & 0x7);
         float depthPercentage = depthConfidence == 0 ? 1.f : (depthConfidence - 1) / 7.f;
 
-        depthTextView.setText("Depth: "+depthRange + "mm Confidence:"+depthConfidence + " - "+(int)(depthPercentage*100) + "%");
+        depthTextView.setText("Depth: "+depthRange + "mm Confidence: " + (int)(depthPercentage*100) + "% _" + depthConfidence);
     }
 }

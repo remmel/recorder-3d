@@ -7,21 +7,21 @@ I added 2 features :
 
 ## Measure
 
-![Screenshot_resized25](doc\Screenshot_resized25.jpg)
+![Screenshot_resized25](doc/Screenshot_resized25.jpg)
 
 TODO:
 - display something to understand where is measured the depth (like coloring the central pixel)
 
 ## Recorder
 
-![](doc\00000012_preview_image_resized.jpg) ![](doc\00000012_depth.png)
+![](doc/00000012_preview_image_resized.jpg) ![](doc/00000012_depth.png)
 
 Features :
-- Save fancy depth images
+- Save depth (240x180) - (fancy png depth, binary depth16)
 - Save rgb images (1440x1080)
+- Save poses in CSV
 
 TODO:
-- save pose
-- save depth to a more reusable format
+- save rgbd ply
 - understand why it's not possible to save image_preview in a better resolution
 

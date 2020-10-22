@@ -2,16 +2,20 @@ package com.huawei.arengine.demos.java.recorder;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.graphics.ImageFormat;
 import android.media.Image;
 import android.util.Log;
 import com.huawei.hiar.ARPointCloud;
 import com.huawei.hiar.ARSceneMesh;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.nio.channels.FileChannel;
 
 public class ImageUtils {
     private static final String TAG = ImageUtils.class.getSimpleName();
@@ -57,43 +61,59 @@ public class ImageUtils {
         Log.i(TAG, "Image ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
     }
 
-    public static void writeImageDepth(Image image, File f) {
+    public static void writeImageDepth16(Image image, File f) { //w and h will be lost
         if(image.getFormat() != ImageFormat.DEPTH16)
             throw new RuntimeException("Expected image format is DEPTH16, but is:"+image.getFormat());
 
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
-        ShortBuffer sBuffer = buffer.asShortBuffer();
+        try {
+            FileChannel fc = new FileOutputStream(f).getChannel();
+            fc.write(buffer);
+            fc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i(TAG, "Error writing image depth16: " +f.getPath());
+        }
+    }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
-        //        int stride = plane.getRowStride(); //why? always width/2?
+    //TODO add "tum" depth png : https://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats
+    // monochrome / 5000 <=> 1000mm / 16 bits
+    public static void writeNiceImageDepth(Image image, File f) {
+        if(image.getFormat() != ImageFormat.DEPTH16)
+            throw new RuntimeException("Expected image format is DEPTH16, but is:"+image.getFormat());
 
-//        short depth16[] = new short[width*height]; //TODO check if quicker using that array
-//        sBuffer.get(depth16);
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
-        short[][] depth = new short[width][height];
-        Short min = null;
-        Short max = null;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-//                short depthSample = depth16[y*width + x];
-                short depthSample = sBuffer.get();
+        int w = image.getWidth();
+        int h = image.getHeight();
+
+        short[][] depth = depth16ToDepthArray(buffer, w, h);
+        Bitmap bitmap = depthArrayToFancyRgbHueBitmap(depth, w, h);
+
+        IoUtils.writePNG(f, bitmap);
+        Log.i(TAG, "Image depth ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
+    }
+
+    protected static short[][] depth16ToDepthArray(ByteBuffer byteBuffer, int w, int h) {
+        byteBuffer = byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        ShortBuffer sBuffer = byteBuffer.asShortBuffer();
+        short[][] depth = new short[w][h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                short depthSample = sBuffer.get(); //depth16[y*width + x];
                 short depthRange = (short) (depthSample & 0x1FFF);
-                if(depthRange != 0) {
-                    if(min == null || depthRange < min) min = depthRange;
-                    if(max == null || depthRange > max) max = depthRange;
-                }
 //                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
                 depth[x][y] = depthRange;
             }
         }
+        return depth;
+    }
 
+    protected static Bitmap depthArrayToFancyRgbHueBitmap(short[][] depth, int w, int h) {
         // Transform depth array to nice image for debugging purpose
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
                 int val = depth[x][y]; //between 60 and 4000;
 //                int hue = normalize(val, min,max, 0, 360);
                 int hue = val % 360;
@@ -104,9 +124,7 @@ public class ImageUtils {
                 bitmap.setPixel(x, y, c);
             }
         }
-
-        IoUtils.writePNG(f, bitmap);
-        Log.i(TAG, "Image depth ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
+        return bitmap;
     }
 
     private static int normalize(int value, int inputMin, int inputMax, int outputMin, int outputMax) {

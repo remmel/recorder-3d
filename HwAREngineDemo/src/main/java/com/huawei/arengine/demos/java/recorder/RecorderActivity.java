@@ -152,6 +152,7 @@ public class RecorderActivity extends Activity {
             mDisplayRotationManager.unregisterDisplayListener();
             mSurfaceView.onPause();
             mArSession.pause();
+            mRecorderRenderManager.onPause();
         }
         Log.i(TAG, "onPause end.");
     }

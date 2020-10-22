@@ -5,17 +5,28 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import android.widget.TextView;
 
+import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
 import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARFrame;
+import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -48,6 +59,13 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     private File dir; //folder where the rgb & depth images will be saved
 
+    FileWriter fileWriterPose;
+
+    private File fPose;
+    private List<CsvPose> csvPoses = new ArrayList<>();
+
+    TextView poseTextView;
+
     public RecorderRenderManager(Activity activity, Context context) {
         mActivity = activity;
         mContext = context;
@@ -57,6 +75,9 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+
+        fPose = new File(dir, "poses.csv");
+        poseTextView = activity.findViewById(R.id.recorderPoseTextView);
     }
 
     /**
@@ -132,16 +153,41 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     private void updateFrameRecording(ARFrame arFrame) {
         numFrame++;
-        if(numFrame % 12 != 0) return; //only save part of frames
 
-        //arFrame.getCamera().getPose().
+        ARPose arPose = arFrame.getCamera().getPose();
 
         String numFrameStr = String.format("%08d", numFrame);
+        CsvPose csvPose = new CsvPose(numFrameStr, arPose);
+        poseTextView.setText(csvPose.toString());
 
-//        ImageUtils.writeImageYuv(arFrame.acquireCameraImage(), new File(dir, numFrameStr+"_camera_image.jpg"));
-        ImageUtils.writeImageYuv(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_preview_image.jpg"));
-        ImageUtils.writeImageDepth(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png"));
+        if(numFrame % 12 != 0) return; //only save part of frames
+
+        ImageUtils.writeImageYuv(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage()
+        ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+".depth16"));
+        ImageUtils.writeNiceImageDepth(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png"));
 //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), "scene_mesh_"+numFrame+".obj", dir);
 //        ImageUtils.writeObj( arFrame.acquirePointCloud(), "scene_mesh_"+numFrame+".obj", dir);
+
+        csvPoses.add(csvPose);
+    }
+
+
+    public void onPause() {
+        writePoses();
+    }
+
+    protected void writePoses() {
+        Path path = Paths.get(this.fPose.toURI());
+        try {
+            Files.write(path, CsvPose.toCsvRows(this.csvPoses));
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Cannot save poses: "+path);
+        }
+    }
+
+    public static void main(String[] args) {
+        //Call static method of Book class using class name only
+        System.out.println("sdf");
     }
 }

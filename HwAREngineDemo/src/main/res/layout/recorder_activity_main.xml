@@ -11,4 +11,18 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="top" />
+    <TextView
+        android:id="@+id/recorderPoseTextView"
+        android:layout_width="match_parent"
+        android:layout_height="47dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="109dp"
+        android:layout_marginBottom="403dp"
+        android:gravity="left"
+        android:text="..."
+        android:textColor="#ffffff"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="512dp" />
 </RelativeLayout>
