@@ -8,18 +8,19 @@ import java.util.List;
 import javax.vecmath.Vector4f;
 
 public class CsvPose {
-    private static final String HEADER = "frame,tx,ty,tz,qx,qy,qz,qw,yaw,pitch,roll\n";
+    private static final String HEADER = "frame,tx,ty,tz,qx,qy,qz,qw,yaw,pitch,roll,projection";
 
     protected String frameId;
     protected ARPose p;
     protected double yaw;
     protected double pitch;
     protected double roll;
+    protected float[] projectionMatrix;
 
     private static Character DELIMITER = ',';
 
     ////north : https://github.com/google-ar/arcore-android-sdk/issues/119
-    public CsvPose(String frameId, ARPose pose) {
+    public CsvPose(String frameId, ARPose pose, float[] projectionMatrix) {
         this.frameId = frameId;
         this.p = pose;
 
@@ -28,6 +29,8 @@ public class CsvPose {
         pitch = Math.toDegrees(Math.atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z));
         yaw = Math.toDegrees(Math.atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z));
         roll = Math.toDegrees(Math.asin(2 * q.x * q.y + 2 * q.z * q.w));
+
+        this.projectionMatrix = projectionMatrix;
     }
 
     public String toCsvRow() {
@@ -42,7 +45,16 @@ public class CsvPose {
                 .append(p.qw()).append(DELIMITER)
                 .append(yaw).append(DELIMITER)
                 .append(pitch).append(DELIMITER)
-                .append(roll);
+                .append(roll).append(DELIMITER);
+
+        return sb.toString() + join(projectionMatrix, ' ');
+    }
+
+    protected static String join(float[] values, char delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (float v : values) {
+            sb.append(v).append(delimiter);
+        }
         return sb.toString();
     }
 

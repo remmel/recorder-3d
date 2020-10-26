@@ -74,10 +74,10 @@ public class RecorderActivity extends Activity {
                 mArSession = new ARSession(this);
                 ARWorldTrackingConfig config = new ARWorldTrackingConfig(mArSession);
                 config.setFocusMode(ARConfigBase.FocusMode.AUTO_FOCUS);
-                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
+//                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
                // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
                 //config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH);
-                //config.setPreviewSize(320,240); //Doesnt work https://developer.huawei.com/consumer/en/doc/HMSCore-References/config_base-0000001050119488-V5#EN-US_TOPIC_0000001050128723__section1231643615527
+//                config.setPreviewSize(640, 480); //Still doesnt work on 2.13.0.4 https://developer.huawei.com/consumer/en/doc/HMSCore-References/config_base-0000001050119488-V5#EN-US_TOPIC_0000001050128723__section1231643615527
                 // mArSession.getCameraConfig().getTextureDimensions()
                 mArSession.configure(config);
                 mRecorderRenderManager.setArSession(mArSession);

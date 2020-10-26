@@ -58,7 +58,7 @@ public class ImageUtils {
 
         byte[] nv21 = YUV_420_888toNV21(image);
         IoUtils.writeYUV(f, nv21, image.getWidth(), image.getHeight());
-        Log.i(TAG, "Image ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
+        Log.i(TAG, "Image YUV ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
     }
 
     public static void writeImageDepth16(Image image, File f) { //w and h will be lost

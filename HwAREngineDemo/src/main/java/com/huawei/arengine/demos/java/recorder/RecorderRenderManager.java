@@ -11,7 +11,7 @@ import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
-import com.huawei.hiar.ARCamera;
+import com.huawei.hiar.ARCameraIntrinsics;
 import com.huawei.hiar.ARFrame;
 import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
@@ -19,7 +19,6 @@ import com.huawei.hiar.ARSession;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,8 +57,6 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     long numFrame = 0;
 
     private File dir; //folder where the rgb & depth images will be saved
-
-    FileWriter fileWriterPose;
 
     private File fPose;
     private List<CsvPose> csvPoses = new ArrayList<>();
@@ -134,12 +131,6 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         try {
             mSession.setCameraTextureName(mTextureDisplay.getExternalTextureId());
             ARFrame arFrame = mSession.update();
-            ARCamera arCamera = arFrame.getCamera();
-
-            // The size of the projection matrix is 4 * 4.
-            float[] projectionMatrix = new float[16];
-
-            arCamera.getProjectionMatrix(projectionMatrix, PROJ_MATRIX_OFFSET, PROJ_MATRIX_NEAR, PROJ_MATRIX_FAR);
             mTextureDisplay.onDrawFrame(arFrame);
             updateFrameRecording(arFrame);
 
@@ -156,8 +147,21 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         ARPose arPose = arFrame.getCamera().getPose();
 
+        // TODO get camera intrinsics
+        // The size of the projection matrix is 4 * 4.
+        float[] projectionMatrix = new float[16];
+        arFrame.getCamera().getProjectionMatrix(projectionMatrix, PROJ_MATRIX_OFFSET, PROJ_MATRIX_NEAR, PROJ_MATRIX_FAR);
+        float[] viewMatrix = new float[16];
+        //arFrame.getCamera().getViewMatrix(viewMatrix, 0);
+        ARCameraIntrinsics arCameraIntrinsics = arFrame.getCamera().getCameraImageIntrinsics();
+        float[] distortions = arCameraIntrinsics.getDistortions();
+        float[] focalLength = arCameraIntrinsics.getFocalLength();
+        float[] principalPoint = arCameraIntrinsics.getPrincipalPoint(); //9441
+        int[] imageDimensions = arCameraIntrinsics.getImageDimensions(); //1080 1440
+
         String numFrameStr = String.format("%08d", numFrame);
-        CsvPose csvPose = new CsvPose(numFrameStr, arPose);
+
+        CsvPose csvPose = new CsvPose(numFrameStr, arPose, projectionMatrix);
         poseTextView.setText(csvPose.toString());
 
         if(numFrame % 12 != 0) return; //only save part of frames

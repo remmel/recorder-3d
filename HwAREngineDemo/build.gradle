@@ -37,6 +37,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'javax.vecmath:vecmath:1.5.2'
     implementation 'de.javagl:obj:0.3.0'
-	implementation 'com.huawei.hms:arenginesdk:2.12.0.1'
+	implementation 'com.huawei.hms:arenginesdk:2.13.0.4' //check last version https://developer.huawei.com/consumer/en/doc/development/HMSCore-Guides-V5/version-change-history-0000001050132857-V5
     testImplementation 'junit:junit:4.12'
 }
