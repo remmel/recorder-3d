@@ -17,7 +17,6 @@ import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -166,9 +165,11 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         if(numFrame % 12 != 0) return; //only save part of frames
 
-        ImageUtils.writeImageYuv(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage()
-        ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+".depth16"));
-        ImageUtils.writeNiceImageDepth(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png"));
+        ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage()
+        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin"));
+        ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth16.bin"));
+        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png"));
+        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_depth.ply"));
 //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), "scene_mesh_"+numFrame+".obj", dir);
 //        ImageUtils.writeObj( arFrame.acquirePointCloud(), "scene_mesh_"+numFrame+".obj", dir);
 
@@ -188,10 +189,5 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             e.printStackTrace();
             Log.e(TAG, "Cannot save poses: "+path);
         }
-    }
-
-    public static void main(String[] args) {
-        //Call static method of Book class using class name only
-        System.out.println("sdf");
     }
 }

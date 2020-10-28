@@ -9,6 +9,7 @@ android {
         targetSdkVersion 27
         versionCode 2
         versionName rootProject.ext.versionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         ndk {
             //abiFilters  "arm64-v8a"
@@ -39,4 +40,8 @@ dependencies {
     implementation 'de.javagl:obj:0.3.0'
 	implementation 'com.huawei.hms:arenginesdk:2.13.0.4' //check last version https://developer.huawei.com/consumer/en/doc/development/HMSCore-Guides-V5/version-change-history-0000001050132857-V5
     testImplementation 'junit:junit:4.12'
+
+    // Required for instrumented tests
+    androidTestImplementation 'com.android.support:support-annotations:24.0.0'
+    androidTestImplementation 'com.android.support.test:runner:0.5'
 }

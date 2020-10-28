@@ -20,12 +20,13 @@ Features :
 - Save depth (240x180) - (fancy png depth, binary depth16)
 - Save rgb images (1440x1080)
 - Save poses in CSV
+- save rgbd ply
 
 TODO:
-- save rgbd ply
+- ply: strange colors
+- ply: get depth sensor intrinsics
 - save depth in tum format / how to save 16 bit monochrome PNG?
-- understand why it's not possible to save image_preview in a better resolution / doesn't seem to be fixed in 2.13
-
+- understand why it's not possible to save image_preview in a better resolution / doesn't seem to be fixed in 2.13 - [github issue](https://github.com/HMS-Core/hms-AREngine-demo/issues/7)
 
 
 Camera Intrinsics (Honor View 20 - AR Engine)
