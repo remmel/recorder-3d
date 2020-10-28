@@ -169,7 +169,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin"));
         ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth16.bin"));
         ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png"));
-        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_depth.ply"));
+        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply"));
 //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), "scene_mesh_"+numFrame+".obj", dir);
 //        ImageUtils.writeObj( arFrame.acquirePointCloud(), "scene_mesh_"+numFrame+".obj", dir);
 

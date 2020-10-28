@@ -260,7 +260,7 @@ public class ImageUtils {
         }
     }
 
-    private static Bitmap jpgToBitmap(String path) {
+    protected static Bitmap jpgToBitmap(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(path, options);

@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ImageUtilsTest {
-    private static final String DEPTH16 = "src/test/resources/00000012.depth16.bin";
+    private static final String DEPTH16 = "src/test/resources/00000012_depth16.bin";
     private static final String PLY = "src/test/resources/00000012.ply";
     private static final String JPEG = "src/test/resources/00000012_image.jpg"; //1440x1080
 
