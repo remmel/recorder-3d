@@ -23,7 +23,6 @@ Features :
 - save rgbd ply
 
 TODO:
-- ply: strange colors
 - ply: get depth sensor intrinsics
 - save depth in tum format / how to save 16 bit monochrome PNG?
 - understand why it's not possible to save image_preview in a better resolution / doesn't seem to be fixed in 2.13 - [github issue](https://github.com/HMS-Core/hms-AREngine-demo/issues/7)

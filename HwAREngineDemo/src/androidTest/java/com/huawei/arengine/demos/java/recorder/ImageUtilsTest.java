@@ -14,19 +14,29 @@ public class ImageUtilsTest {
     //        File dir = InstrumentationRegistry.getInstrumentation().getTargetContext().getExternalFilesDir("test");
     private static final String DIR = "/storage/emulated/0/Android/data/com.huawei.arenginesdk.demo/files/test";
     private static final String DEPTH16 = DIR + "/00000012_depth16.bin";
-    private static final String PLY = DIR + "/00000012_b.ply";
+    private static final String PLY = DIR + "/00000012_test.ply";
     private static final String JPEG = DIR + "/00000012_image.jpg";
     private static final String IMAGE_YUVNV21 =  DIR + "/00000012_image.bin";
     private static final int IMG_W = 1440;
     private static final int IMG_H = 1080;
 
     @Test
-    public void writePlyFromYuvnv21() throws IOException {
+    public void writePlyFromYuvnv21ViaJpg() throws IOException {
         byte[] bytesDepth = Files.readAllBytes(Paths.get(DEPTH16));
         ByteBuffer depthBuffer = ByteBuffer.wrap(bytesDepth);
 
         byte[] bytesYuvNv21 = Files.readAllBytes(Paths.get(IMAGE_YUVNV21));
-        Bitmap bitmap = ImageUtils.n21ToBitmap(bytesYuvNv21, IMG_W, IMG_H);
+        Bitmap bitmap = ImageUtils.n21ToBitmapViaJpg(bytesYuvNv21, IMG_W, IMG_H);
+        ImageUtils.writePly(depthBuffer, bitmap, new File(PLY));
+    }
+
+    @Test
+    public void writePlyFromYuvnv21ViaDecode() throws IOException {
+        byte[] bytesDepth = Files.readAllBytes(Paths.get(DEPTH16));
+        ByteBuffer depthBuffer = ByteBuffer.wrap(bytesDepth);
+
+        byte[] bytesYuvNv21 = Files.readAllBytes(Paths.get(IMAGE_YUVNV21));
+        Bitmap bitmap = ImageUtils.n21ToBitmapViaDecode(bytesYuvNv21, IMG_W, IMG_H);
         ImageUtils.writePly(depthBuffer, bitmap, new File(PLY));
     }
 
@@ -39,10 +49,16 @@ public class ImageUtilsTest {
         ImageUtils.writePly(depthBuffer, bitmap, new File(PLY));
     }
 
-
     @Test
     public void writeYuvToJpeg() throws IOException {
         byte[] bytesYuvNv21 = Files.readAllBytes(Paths.get(IMAGE_YUVNV21));
-        IoUtils.writeYUV(new File(DIR + "/00000012_image2.jpg"), bytesYuvNv21, IMG_W, IMG_H);
+        IoUtils.writeYUV(new File(DIR + "/00000012_image_writeYuvToJpeg.jpg"), bytesYuvNv21, IMG_W, IMG_H);
+    }
+
+    @Test
+    public void writeYuvToJpegManualDecode() throws IOException {
+        byte[] bytesYuvNv21 = Files.readAllBytes(Paths.get(IMAGE_YUVNV21));
+        Bitmap bitmap = ImageUtils.n21ToBitmapViaDecode(bytesYuvNv21, IMG_W, IMG_H);
+        IoUtils.writePNG(new File(DIR + "/00000012_image_writeYuvToJpegManualDecode.png"), bitmap);
     }
 }

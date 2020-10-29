@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -199,7 +200,7 @@ public class ImageUtils {
         ByteBuffer depthBuffer = acquireDepthImage.getPlanes()[0].getBuffer();
 
         byte[] bytesYuvNv21 = YUV_420_888toNV21(acquirePreviewImage);
-        Bitmap bitmap = n21ToBitmap(bytesYuvNv21, acquirePreviewImage.getWidth(), acquirePreviewImage.getHeight());
+        Bitmap bitmap = n21ToBitmapViaJpg(bytesYuvNv21, acquirePreviewImage.getWidth(), acquirePreviewImage.getHeight());
 
         writePly(depthBuffer, bitmap, file);
     }
@@ -241,14 +242,14 @@ public class ImageUtils {
                 int xcolor = x*6; //color image is 6 times bigger
                 int ycolor = y*6;
 
-                int pixel = bitmap.getPixel(x*6, y*6); //6 times better res
+                int pixel = bitmap.getPixel(xcolor, ycolor);
                 int redValue = Color.red(pixel);
                 int blueValue = Color.blue(pixel);
                 int greenValue = Color.green(pixel);
 
                 float xw = (float)cx * z / fx;
                 float yw = (float)cy * z / fy;
-                sb.append(xw+" "+yw+" "+z+" "+ " "+redValue+" "+blueValue+" "+greenValue+"\n"); // # "+x+" "+y+"_"+cx+" "+cy+"\n");
+                sb.append(xw+" "+yw+" "+z+" "+ " "+redValue+" "+greenValue+" "+blueValue+"\n"); // # "+x+" "+y+"_"+cx+" "+cy+"\n");
                 points++;
             }
         }
@@ -268,30 +269,66 @@ public class ImageUtils {
     }
 
     // TODO do better conversion
-    protected static Bitmap n21ToBitmap(byte[] nv21, int width, int height){
+    // https://github.com/silvaren/easyrs/blob/master/easyrs/src/main/java/io/github/silvaren/easyrs/tools/Nv21Image.java
+    // https://stackoverflow.com/questions/32276522/convert-nv21-byte-array-into-bitmap-readable-format
+    //opencv  Imgproc.cvtColor / Imgproc.COLOR_YUV2RGBA_NV21
+    //RenderScript  ScriptIntrinsicYuvToRGB
+    protected static Bitmap n21ToBitmapViaJpg(byte[] nv21, int width, int height){
         YuvImage yuvimage = new YuvImage(nv21, ImageFormat.NV21, width, height, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         yuvimage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
         byte[] jdata = baos.toByteArray();
         BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
-        bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888; //TODO not the right colors, because of that?
-//        bitmapFatoryOptions.
+        bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
         return bmp;
-
-        // TODO avoid going through JPEG
-//        int colorY = n21[wcolor*hcolor*0 + xcolor +ycolor*1440]; //1555200 bytes
-//        int colorCr = n21[wcolor*hcolor*1 + xcolor+ycolor*720]; //777599 bytes (1px = 0.5byte)
-//        int colorCb = n21[(int)(wcolor*hcolor*1.5 +xcolor+ycolor*720)];
-//
-//        int redValue = (int) (colorY + 1.402*(colorCr-128));
-//        int blueValue = (int) (colorY - 0.34414*(colorCb-128)-0.71414*(colorCr-128));
-//        int greenValue = (int) (colorY + 1.772*(colorCb-128));
     }
 
-    protected static byte[] n21ToRgb(byte[] yuvn21, int width, int height) {
-        return null;
+    protected static Bitmap n21ToBitmapViaDecode(byte[] nv21, int w, int h) {
+        int rgb[] = decodeYUV420SP(nv21, w, h);
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+
+//        bitmap.copyPixelsFromBuffer(IntBuffer.wrap(rgb)); //red is blue, why?
+        bitmap.setPixels(rgb, 0, w, 0, 0, w, h);
+
+//        for(int y=0; y<h;y++) {
+//            for(int x=0;x<w; x++) {
+//                bitmap.setPixel(x, y, rgb[x+y*w]);
+//            }
+//        }
+        return bitmap;
     }
 
+    // code from Ketai project n21ToRgb
+    protected static int[] decodeYUV420SP(byte[] yuv420sp, int width, int height) {
 
+        final int frameSize = width * height;
+
+        int[] rgb = new int[frameSize];
+
+        for (int j = 0, yp = 0; j < height; j++) {
+            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+            for (int i = 0; i < width; i++, yp++) {
+                int y = (0xff & ((int) yuv420sp[yp])) - 16;
+                if (y < 0)
+                    y = 0;
+                if ((i & 1) == 0) {
+                    v = (0xff & yuv420sp[uvp++]) - 128;
+                    u = (0xff & yuv420sp[uvp++]) - 128;
+                }
+
+                int y1192 = 1192 * y;
+                int r = (y1192 + 1634 * v);
+                int g = (y1192 - 833 * v - 400 * u);
+                int b = (y1192 + 2066 * u);
+
+                r = r > 262143 ? 262143 : r < 0 ? 0 : r; //clamp(r, 0, 262143)
+                g = g > 262143 ? 262143 : g < 0 ? 0 : g;
+                b = b > 262143 ? 262143 : b < 0 ? 0 : b;
+
+                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+            }
+        }
+        return rgb;
+    }
 }
