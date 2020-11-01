@@ -7,7 +7,7 @@ I added 2 features :
 
 ## Recorder
 
-<img src="HwAREngineDemo/src/test/resources/00000012_image.jpg" style="zoom:17%;" /> ![](HwAREngineDemo/src/test/resources/00000012_depth.png) <img src="doc/plymeshlab.png" style="zoom: 50%;" />
+<img src="HwAREngineDemo/src/test/resources/00000012_image.jpg" width="240" /> ![](HwAREngineDemo/src/test/resources/00000012_depth.png) <img src="doc/plymeshlab.png" width="240" />
 
 Features :
 - Save depth (240x180 - fancy png, binary depth16)
