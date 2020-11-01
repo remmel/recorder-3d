@@ -218,7 +218,7 @@ public class ImageUtils {
                 "end_header\n";
         int w = 240; //TODO that data must be params
         int h = 180;
-        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov?
+        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
         float fy = 170;
         int wcolor = 1440;
         int hcolor = 1080;
