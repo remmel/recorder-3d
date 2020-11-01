@@ -151,7 +151,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         float[] projectionMatrix = new float[16];
         arFrame.getCamera().getProjectionMatrix(projectionMatrix, PROJ_MATRIX_OFFSET, PROJ_MATRIX_NEAR, PROJ_MATRIX_FAR);
         float[] viewMatrix = new float[16];
-        //arFrame.getCamera().getViewMatrix(viewMatrix, 0);
+        arFrame.getCamera().getViewMatrix(viewMatrix, 0);
         ARCameraIntrinsics arCameraIntrinsics = arFrame.getCamera().getCameraImageIntrinsics();
         float[] distortions = arCameraIntrinsics.getDistortions();
         float[] focalLength = arCameraIntrinsics.getFocalLength();
@@ -165,6 +165,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         if(numFrame % 12 != 0) return; //only save part of frames
 
+        //only writing bin is mandatory, others writing could be done after to avoid slowing the phone
         ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage()
         ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin"));
         ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth16.bin"));
