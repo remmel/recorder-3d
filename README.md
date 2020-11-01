@@ -16,7 +16,7 @@ Features :
 - Save rgbd ply [download](HwAREngineDemo/src/test/resources/00000012.ply)
 
 TODO:
-- ply: get depth sensor intrinsics + [#1083](https://github.com/google-ar/arcore-android-sdk/issues/1083)
+- ply: get depth sensor intrinsics [#1083](https://github.com/google-ar/arcore-android-sdk/issues/1083) + extrinsics between between 2 cameras (try to get [arFrame.acquireSceneMesh()](https://developer.huawei.com/consumer/en/doc/development/HMSCore-References-V5/frame-0000001050121447-V5#EN-US_TOPIC_0000001050126786__section167911410271) ply/obj and compare with mine) [#638](https://github.com/google-ar/arcore-android-sdk/issues/638#issuecomment-438785104)
 - save depth in tum format / how to save 16 bit monochrome PNG?
 - understand why it's not possible to save image_preview in a better resolution / doesn't seem to be fixed in 2.13 - [github issue](https://github.com/HMS-Core/hms-AREngine-demo/issues/7)
 
