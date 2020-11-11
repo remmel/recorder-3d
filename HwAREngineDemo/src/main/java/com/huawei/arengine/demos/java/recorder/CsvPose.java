@@ -17,7 +17,7 @@ public class CsvPose {
     protected double roll;
     protected float[] projectionMatrix;
 
-    private static Character DELIMITER = ',';
+    private static String DELIMITER = ",";
 
     ////north : https://github.com/google-ar/arcore-android-sdk/issues/119
     public CsvPose(String frameId, ARPose pose, float[] projectionMatrix) {
@@ -31,6 +31,18 @@ public class CsvPose {
         roll = Math.toDegrees(Math.asin(2 * q.x * q.y + 2 * q.z * q.w));
 
         this.projectionMatrix = projectionMatrix;
+    }
+
+    public CsvPose(String row) {
+        String cols[] = row.split(DELIMITER);
+        frameId = cols[0];
+        p = new ARPose(
+                new float[]{Float.parseFloat(cols[1]), Float.parseFloat(cols[2]), Float.parseFloat(cols[3])},
+                new float[]{Float.parseFloat(cols[4]), Float.parseFloat(cols[5]), Float.parseFloat(cols[6]), Float.parseFloat(cols[7])}
+        );
+        yaw = Double.parseDouble(cols[8]);
+        pitch = Double.parseDouble(cols[9]);
+        roll = Double.parseDouble(cols[10]);
     }
 
     public String toCsvRow() {
@@ -72,5 +84,15 @@ public class CsvPose {
             rows.add(row);
         }
         return rows;
+    }
+
+    public static List<CsvPose> fromCsvRows(List<String> rows) {
+        List<CsvPose> poses = new ArrayList<>(rows.size()+1);
+        boolean isHeader = true;
+        for (String row : rows) {
+            if(isHeader) {isHeader=false; continue;}
+            poses.add(new CsvPose(row));
+        }
+        return poses;
     }
 }

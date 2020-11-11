@@ -23,6 +23,8 @@ import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageUtils {
     private static final String TAG = ImageUtils.class.getSimpleName();
@@ -205,60 +207,39 @@ public class ImageUtils {
         writePly(depthBuffer, bitmap, file);
     }
 
+    // TODO get intrinsics rgb & d and extrinsics between them
     public static void writePly(ByteBuffer depthBuffer, Bitmap bitmap, File plyOutput) {
-        final String HEADER_PLY = "ply\n" +
-                "format ascii 1.0\n" +
-                "element vertex %d\n" +
-                "property float x\n" +
-                "property float y\n" +
-                "property float z\n" +
-                "property uchar red\n" +
-                "property uchar green\n" +
-                "property uchar blue\n" +
-                "end_header\n";
         int w = 240; //TODO that data must be params
         int h = 180;
-        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
-        float fy = 170;
-        int wcolor = 1440;
-        int hcolor = 1080;
+//        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
+//        float fy = 170;
+        float fx = 178.8f;
+        float fy = 178.8f;
+        int ratiorgbd = 6; //rgb image is 6 times bigger than d
 
         //depth
         short[][] depth = ImageUtils.depth16ToDepthRangeArray(depthBuffer, w, h);
 
+        List<PlyProp> plyProps = new ArrayList<>();
 
-        StringBuffer sb = new StringBuffer();
-
-        //TODO take into account translation + rotation between 2 cameras (rgb & d)
-
-        int points = 0;
         for (int x = 0; x<w ; x++) {
             for(int y = 0; y<h; y++) {
                 float z = depth[x][y] / 1000f; //base unit is meter, not millimeter
-                if(z == 0f || z>2f) continue;
+                if(z == 0f) continue; //no depth value
+                if(y == 0) continue; //first row contains incorrect values
                 int cx = x - w/2;
                 int cy = y - h/2;
-
-                int xcolor = x*6; //color image is 6 times bigger
-                int ycolor = y*6;
-
-                int pixel = bitmap.getPixel(xcolor, ycolor);
-                int redValue = Color.red(pixel);
-                int blueValue = Color.blue(pixel);
-                int greenValue = Color.green(pixel);
-
                 float xw = (float)cx * z / fx;
                 float yw = (float)cy * z / fy;
-                sb.append(xw+" "+yw+" "+z+" "+ " "+redValue+" "+greenValue+" "+blueValue+"\n"); // # "+x+" "+y+"_"+cx+" "+cy+"\n");
-                points++;
+                
+                int pixel = bitmap.getPixel(x*ratiorgbd, y*ratiorgbd);
+
+                plyProps.add(new PlyProp(xw, yw, z, Color.red(pixel), Color.green(pixel), Color.blue(pixel)));
             }
         }
-        sb.insert(0, String.format(HEADER_PLY, points));
-        try {
-            Files.write(Paths.get(plyOutput.getPath()), sb.toString().getBytes());
-        } catch (IOException e) {
-            Log.e(TAG, "Fail saving ply file:" + plyOutput.getPath());
-        }
+
+        String str = PlyProp.toString(plyProps);
+        IoUtils.writeBytes(plyOutput, str.getBytes());
     }
 
     protected static Bitmap jpgToBitmap(String path) {
