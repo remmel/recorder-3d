@@ -5,13 +5,15 @@ import com.huawei.hiar.ARPose;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector4f;
 
 public class CsvPose {
     private static final String HEADER = "frame,tx,ty,tz,qx,qy,qz,qw,yaw,pitch,roll,projection";
 
     protected String frameId;
-    protected ARPose p;
+    public ARPose p;
     protected double yaw;
     protected double pitch;
     protected double roll;
@@ -40,9 +42,32 @@ public class CsvPose {
                 new float[]{Float.parseFloat(cols[1]), Float.parseFloat(cols[2]), Float.parseFloat(cols[3])},
                 new float[]{Float.parseFloat(cols[4]), Float.parseFloat(cols[5]), Float.parseFloat(cols[6]), Float.parseFloat(cols[7])}
         );
-        yaw = Double.parseDouble(cols[8]);
-        pitch = Double.parseDouble(cols[9]);
-        roll = Double.parseDouble(cols[10]);
+        if(cols.length > 8) {
+            yaw = Double.parseDouble(cols[8]);
+            pitch = Double.parseDouble(cols[9]);
+            roll = Double.parseDouble(cols[10]);
+            projectionMatrix = parseFloatList(cols[11]);
+        }
+    }
+
+    //better in java8:  Arrays.stream(cols[11].split(" ")).mapToInt(num ->  Float.parseFloat(num)).toArray();
+    protected static float[] parseFloatList(String numbers) {
+        String[] numbersArr =  numbers.split(" ");
+        float[] floatsArr = new float[numbersArr.length];
+        int i = 0;
+        for (String num : numbersArr) {
+            floatsArr[i] = Float.parseFloat(num);
+            i++;
+        }
+        return floatsArr;
+    }
+
+    public Vector3d getPosition() {
+        return new Vector3d(this.p.tx(), this.p.ty(), this.p.tz());
+    }
+
+    protected Quat4d getQuat() {
+        return new Quat4d(this.p.qx(), this.p.qy(), this.p.qz(), this.p.qw());
     }
 
     public String toCsvRow() {

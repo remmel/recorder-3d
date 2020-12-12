@@ -94,6 +94,8 @@ result.get(CaptureResult.LENS_FOCUS_RANGE) = 0 10
 result.get(CaptureResult.LENS_INTRINSIC_CALIBRATION) = [0,X7]
 request.get(CaptureRequest.LENS_FOCAL_LENGTH)= 7.48
 
+https://quaternions.online/
+
 ## Measure
 
 ![Screenshot_resized25](doc/Screenshot_resized25.jpg)

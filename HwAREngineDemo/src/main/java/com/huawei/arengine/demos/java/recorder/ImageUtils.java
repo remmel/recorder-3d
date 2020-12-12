@@ -208,7 +208,7 @@ public class ImageUtils {
     }
 
     // TODO get intrinsics rgb & d and extrinsics between them
-    public static void writePly(ByteBuffer depthBuffer, Bitmap bitmap, File plyOutput) {
+    public static List<PlyProp> getPly(ByteBuffer depthBuffer, Bitmap rgb){
         int w = 240; //TODO that data must be params
         int h = 180;
 //        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
@@ -231,13 +231,17 @@ public class ImageUtils {
                 int cy = y - h/2;
                 float xw = (float)cx * z / fx;
                 float yw = (float)cy * z / fy;
-                
-                int pixel = bitmap.getPixel(x*ratiorgbd, y*ratiorgbd);
+
+                int pixel = rgb.getPixel(x*ratiorgbd, y*ratiorgbd);
 
                 plyProps.add(new PlyProp(xw, yw, z, Color.red(pixel), Color.green(pixel), Color.blue(pixel)));
             }
         }
+        return plyProps;
+    }
 
+    public static void writePly(ByteBuffer depthBuffer, Bitmap rgb, File plyOutput) {
+        List<PlyProp> plyProps = getPly(depthBuffer, rgb);
         String str = PlyProp.toString(plyProps);
         IoUtils.writeBytes(plyOutput, str.getBytes());
     }
@@ -268,15 +272,7 @@ public class ImageUtils {
     protected static Bitmap n21ToBitmapViaDecode(byte[] nv21, int w, int h) {
         int rgb[] = decodeYUV420SP(nv21, w, h);
         Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-
-//        bitmap.copyPixelsFromBuffer(IntBuffer.wrap(rgb)); //red is blue, why?
         bitmap.setPixels(rgb, 0, w, 0, 0, w, h);
-
-//        for(int y=0; y<h;y++) {
-//            for(int x=0;x<w; x++) {
-//                bitmap.setPixel(x, y, rgb[x+y*w]);
-//            }
-//        }
         return bitmap;
     }
 

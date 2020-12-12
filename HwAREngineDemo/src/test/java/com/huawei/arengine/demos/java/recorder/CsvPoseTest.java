@@ -19,5 +19,8 @@ public class CsvPoseTest {
         CsvPose p = poses.get(2);
         assertEquals("frameId", "00000036", p.frameId);
         assertEquals(-176.63390317955128d, p.yaw, 0d);
+
+        List<String>rows2 = CsvPose.toCsvRows(poses);
+        assertEquals(rows, rows2);
     }
 }
