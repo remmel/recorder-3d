@@ -48,6 +48,8 @@ public class ChooseActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_choose);
+        // AR Engine requires the camera permission.
+        PermissionManager.checkPermission(this);
     }
 
     @Override
@@ -55,9 +57,6 @@ public class ChooseActivity extends Activity {
         Log.d(TAG, "onResume");
         super.onResume();
         isFirstClick = true;
-
-        // AR Engine requires the camera permission.
-        PermissionManager.onResume(this);
     }
 
     @Override
@@ -102,6 +101,10 @@ public class ChooseActivity extends Activity {
             case R.id.btn_hand:
                 startActivity(new Intent(this,
                     com.huawei.arengine.demos.java.hand.HandActivity.class));
+                break;
+            case R.id.btn_health:
+                startActivity(new Intent(this,
+                    com.huawei.arengine.demos.java.health.HealthActivity.class));
                 break;
             case R.id.btn_measure:
                 startActivity(new Intent(this, MeasureActivity.class));
