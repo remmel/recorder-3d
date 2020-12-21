@@ -42,11 +42,13 @@ public class CsvPose {
                 new float[]{Float.parseFloat(cols[1]), Float.parseFloat(cols[2]), Float.parseFloat(cols[3])},
                 new float[]{Float.parseFloat(cols[4]), Float.parseFloat(cols[5]), Float.parseFloat(cols[6]), Float.parseFloat(cols[7])}
         );
-        if(cols.length > 8) {
+        if(cols.length > 10) {
             yaw = Double.parseDouble(cols[8]);
             pitch = Double.parseDouble(cols[9]);
             roll = Double.parseDouble(cols[10]);
-            projectionMatrix = parseFloatList(cols[11]);
+
+            if(cols.length > 11)
+                projectionMatrix = parseFloatList(cols[11]);
         }
     }
 

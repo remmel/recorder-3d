@@ -22,6 +22,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -215,7 +216,10 @@ public class ImageUtils {
 //        float fy = 170;
         float fx = 178.8f;
         float fy = 178.8f;
-        int ratiorgbd = 6; //rgb image is 6 times bigger than d
+
+        //if depth=240x180 and rgb=1440x1080 then ratio=6 // rgb is 6x bigger than depth
+        float ratioRgbdW = rgb.getWidth() / (float)w;
+        float ratioRgbdH = rgb.getHeight() / (float)h;
 
         //depth
         short[][] depth = ImageUtils.depth16ToDepthRangeArray(depthBuffer, w, h);
@@ -232,7 +236,7 @@ public class ImageUtils {
                 float xw = (float)cx * z / fx;
                 float yw = (float)cy * z / fy;
 
-                int pixel = rgb.getPixel(x*ratiorgbd, y*ratiorgbd);
+                int pixel = rgb.getPixel((int)(x*ratioRgbdW), (int)(y*ratioRgbdH));
 
                 plyProps.add(new PlyProp(xw, yw, z, Color.red(pixel), Color.green(pixel), Color.blue(pixel)));
             }
