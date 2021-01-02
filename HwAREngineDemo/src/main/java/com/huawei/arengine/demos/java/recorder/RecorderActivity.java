@@ -1,10 +1,16 @@
 package com.huawei.arengine.demos.java.recorder;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.View;
 import android.widget.Toast;
 
@@ -77,11 +83,10 @@ public class RecorderActivity extends Activity {
 //                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
                // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
                 //config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH);
-                //default is 1440x1080
-                //ko: 8000,6000; 4000,3000; 1920,1080; 1600,1200; 1280,720; 1216,912; 1024,768; 768,576
-                //ok: 3264,2448; 2048,1536; 1280,960; 960,720; 640,480; 320,240
-                //default is 1440,1080
-                config.setPreviewSize(3264,2448); // https://developer.huawei.com/consumer/en/doc/HMSCore-References/config_base-0000001050119488-V5#EN-US_TOPIC_0000001050128723__section1231643615527
+
+                config.setPreviewSize(3968, 2976); //default is 1440,1080
+                logSupportedResolution();
+
                 // mArSession.getCameraConfig().getTextureDimensions()
                 mArSession.configure(config);
                 mRecorderRenderManager.setArSession(mArSession);
@@ -103,6 +108,21 @@ public class RecorderActivity extends Activity {
         }
         mDisplayRotationManager.registerDisplayListener();
         mSurfaceView.onResume();
+    }
+
+    /**
+     * https://developer.huawei.com/consumer/en/doc/HMSCore-References/config_base-0000001050119488-V5#EN-US_TOPIC_0000001050128723__section1231643615527
+     * https://github.com/HMS-Core/hms-AREngine-demo/issues/7
+     */
+    private void logSupportedResolution() throws CameraAccessException {
+        CameraManager cameraManager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
+        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics("0"); //cameraManager.getCameraIdList()
+        Size[] supportedPreviewSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(SurfaceTexture.class);
+
+        for (Size s: supportedPreviewSizes) {
+            if((float)s.getHeight() / s.getWidth() == 3f/4)
+                Log.d(TAG, "Supported: "+s);
+        }
     }
 
     /**
