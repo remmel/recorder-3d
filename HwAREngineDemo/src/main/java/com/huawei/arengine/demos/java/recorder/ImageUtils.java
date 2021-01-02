@@ -18,14 +18,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ImageUtils {
     private static final String TAG = ImageUtils.class.getSimpleName();
@@ -48,6 +42,11 @@ public class ImageUtils {
         uBuffer.get(nv21, ySize + vSize, uSize);
 
         return nv21; //3110398 bytes
+    }
+
+    public static Bitmap toBitmap(Image image) {
+        byte[] bytesYuvNv21 = ImageUtils.YUV_420_888toNV21(image);
+        return ImageUtils.n21ToBitmapViaJpg(bytesYuvNv21, image.getWidth(), image.getHeight());
     }
 
     public static void writeImageRgb(Image image, File f) {
@@ -106,7 +105,7 @@ public class ImageUtils {
         short[][] depth = depth16ToDepthRangeArray(buffer, w, h);
         Bitmap bitmap = depthArrayToFancyRgbHueBitmap(depth, w, h);
 
-        IoUtils.writePNG(f, bitmap);
+        IoUtils.writeBitmapAsPng(f, bitmap);
         Log.i(TAG, "Image depth ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
     }
 
@@ -197,57 +196,6 @@ public class ImageUtils {
         FloatBuffer fb = arPointCloud.getPoints();
         if(fb.remaining() == 0) return; //nothing yet to save
         // TODO
-    }
-
-    public static void writePly(Image acquireDepthImage, Image acquirePreviewImage, File file) {
-        ByteBuffer depthBuffer = acquireDepthImage.getPlanes()[0].getBuffer();
-
-        byte[] bytesYuvNv21 = YUV_420_888toNV21(acquirePreviewImage);
-        Bitmap bitmap = n21ToBitmapViaJpg(bytesYuvNv21, acquirePreviewImage.getWidth(), acquirePreviewImage.getHeight());
-
-        writePly(depthBuffer, bitmap, file);
-    }
-
-    // TODO get intrinsics rgb & d and extrinsics between them
-    public static List<PlyProp> getPly(ByteBuffer depthBuffer, Bitmap rgb){
-        int w = 240; //TODO that data must be params
-        int h = 180;
-//        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
-//        float fy = 170;
-        float fx = 178.8f;
-        float fy = 178.8f;
-
-        //if depth=240x180 and rgb=1440x1080 then ratio=6 // rgb is 6x bigger than depth
-        float ratioRgbdW = rgb.getWidth() / (float)w;
-        float ratioRgbdH = rgb.getHeight() / (float)h;
-
-        //depth
-        short[][] depth = ImageUtils.depth16ToDepthRangeArray(depthBuffer, w, h);
-
-        List<PlyProp> plyProps = new ArrayList<>();
-
-        for (int x = 0; x<w ; x++) {
-            for(int y = 0; y<h; y++) {
-                float z = depth[x][y] / 1000f; //base unit is meter, not millimeter
-                if(z == 0f) continue; //no depth value
-                if(y == 0) continue; //first row contains incorrect values
-                int cx = x - w/2;
-                int cy = y - h/2;
-                float xw = (float)cx * z / fx;
-                float yw = (float)cy * z / fy;
-
-                int pixel = rgb.getPixel((int)(x*ratioRgbdW), (int)(y*ratioRgbdH));
-
-                plyProps.add(new PlyProp(xw, yw, z, Color.red(pixel), Color.green(pixel), Color.blue(pixel)));
-            }
-        }
-        return plyProps;
-    }
-
-    public static void writePly(ByteBuffer depthBuffer, Bitmap rgb, File plyOutput) {
-        List<PlyProp> plyProps = getPly(depthBuffer, rgb);
-        String str = PlyProp.toString(plyProps);
-        IoUtils.writeBytes(plyOutput, str.getBytes());
     }
 
     protected static Bitmap jpgToBitmap(String path) {

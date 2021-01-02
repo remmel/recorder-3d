@@ -1,5 +1,10 @@
 package com.huawei.arengine.demos.java.recorder;
 
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +23,20 @@ public class PlyProp {
 
     final static String HEADER_PLY = "ply\n" +
             "format ascii 1.0\n" +
-            "element vertex %d\n" +
+            "element vertex %010d\n" + //to force having fixed header size
+            //I could put spaces instead of 0s, check if it works on main software (Meshlab & CloudCompare ok).
+            // In order to be able to write over the header
+            "property float x\n" +
+            "property float y\n" +
+            "property float z\n" +
+            "property uchar red\n" +
+            "property uchar green\n" +
+            "property uchar blue\n" +
+            "end_header\n";
+
+    final static String HEADER_PLY_BIN = "ply\n" +
+            "format binary_big_endian 1.0\n" +
+            "element vertex %010d\n" + //to force having fixed header size, see above
             "property float x\n" +
             "property float y\n" +
             "property float z\n" +
@@ -53,14 +71,23 @@ public class PlyProp {
         this.b = blue;
     }
 
-    public static String toString(List<PlyProp> props) {
-        StringBuffer sb = new StringBuffer(props.size());
-        sb.insert(0, String.format(HEADER_PLY, props.size()));
+    public String toString() {
+        return this.x+" "+this.y+' '+this.z+' '+this.r+' '+this.g+' '+this.b+'\n';
+    }
 
-        for (PlyProp p: props) {
-            sb.append(p.x+" "+p.y+" "+p.z+" "+ " "+p.r+" "+p.g+" "+p.b+"\n");
+    public byte[] toBytes(boolean isAscii) {
+        if(isAscii) {
+            //string concatenation with "+" same speed as StringBuffer
+            return this.toString().getBytes();
+        } else {
+            return ByteBuffer.allocate(3*4+3).putFloat(this.x).putFloat(this.y).putFloat(this.z)
+                    .put((byte)this.r).put((byte)this.g).put((byte)this.b)
+                    .array();
         }
-        return sb.toString();
+    }
+
+    public static String getHeader(int size, boolean isAscii) {
+        return String.format(isAscii ? HEADER_PLY : HEADER_PLY_BIN, size);
     }
 
     public void set(float[] v){
