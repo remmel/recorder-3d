@@ -2,14 +2,12 @@ package com.huawei.arengine.demos.java.recorder;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.media.Image;
 import android.util.Log;
 
-import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -20,12 +18,6 @@ import java.util.List;
 public class PlyUtils {
 
     private static final String TAG = PlyUtils.class.getSimpleName();
-
-    public static void writePly(Image acquireDepthImage, Image acquirePreviewImage, String path) throws IOException {
-        ByteBuffer depthBuffer = acquireDepthImage.getPlanes()[0].getBuffer();
-        Bitmap rgbBitmap = ImageUtils.toBitmap(acquirePreviewImage);
-        PlyUtils.writePly(getPly(depthBuffer, rgbBitmap), path, true);
-    }
 
     // TODO get intrinsics rgb & d and extrinsics between them
     public static List<PlyProp> getPly(ByteBuffer depthBuffer, Bitmap rgb){
@@ -69,18 +61,24 @@ public class PlyUtils {
         return getPly(depthBuffer, bitmap);
     }
 
-    public static void writePly(ByteBuffer depthBuffer, Bitmap rgb, File plyOutput) throws IOException {
+    public static void writePly(ByteBuffer depthBuffer, Bitmap rgb, File plyOutput) {
         List<PlyProp> plyProps = getPly(depthBuffer, rgb);
         PlyUtils.writePly(plyProps, plyOutput.getPath(), true);
     }
 
-    public static void writePly(List<PlyProp> props, String path, boolean isAscii) throws IOException {
-        final FileOutputStream fos = new FileOutputStream(path);
-        fos.write(PlyProp.getHeader(props.size(), isAscii).getBytes());
-        for (PlyProp prop: props) {
-            fos.write(prop.toBytes(isAscii));
+    public static void writePly(List<PlyProp> props, String path, boolean isAscii) {
+        final FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(path);
+            fos.write(PlyProp.getHeader(props.size(), isAscii).getBytes());
+            for (PlyProp prop: props) {
+                fos.write(prop.toBytes(isAscii));
+            }
+            fos.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error writePly:"+e.getMessage());
+            e.printStackTrace();
         }
-        fos.close();
     }
 
     public static String toString(List<PlyProp> props) {
@@ -91,12 +89,6 @@ public class PlyUtils {
         }
         return sb.toString();
     }
-
-    /**
-     * Tests:
-     * Ascii - 830 jpg 3624x2448 - 30min - 1.10GB (13min to "prepand" header in new file)
-     * Ascii - no prepand - 20min
-     */
 
     /**
      * Optimizations:

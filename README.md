@@ -13,16 +13,21 @@ Every seconds save the rgb and depth image, and its pose in the /storage/emulate
 
 Features :
 - Save depth (240x180 - fancy png, binary depth16)
-- Save rgb images (1440x1080 - png + bin)
+- Save rgb images (3264x2448 - png + bin)
 - Save poses in CSV [download](doc/poses.csv)
-- Save rgbd ply [download](HwAREngineDemo/src/test/resources/00000012.ply)
+- Save rgbd ply [download](HwAREngineDemo/src/test/resources/00000012.ply) (TODO enable it from UI)
 
 TODO:
 - ply: get depth sensor intrinsics [#1083](https://github.com/google-ar/arcore-android-sdk/issues/1083) + extrinsics between between 2 cameras (try to get [arFrame.acquireSceneMesh()](https://developer.huawei.com/consumer/en/doc/development/HMSCore-References-V5/frame-0000001050121447-V5#EN-US_TOPIC_0000001050126786__section167911410271) ply/obj and compare with mine) [#638](https://github.com/google-ar/arcore-android-sdk/issues/638#issuecomment-438785104)
 - save depth in tum format / how to save 16 bit monochrome PNG?
 - convert tum format to depth16 format
-- understand why it's not possible to save image_preview in a better resolution / doesn't seem to be fixed in 2.13 - [github issue](https://github.com/HMS-Core/hms-AREngine-demo/issues/7)
-- merge PLY using poses
+- merge PLY using poses via UI (only test currently)
+- choose photo resolution
+- hi-res only some key image as it slow down the app
+- try using a thread to save hi-res image
+- send images to server merge depth (TSDF)
+- create obj from ply
+- project images on obj
 
 Camera Intrinsics (Honor View 20 - AR Engine : [ARCameraIntrinsics](https://developer.huawei.com/consumer/en/doc/HMSCore-References-V5/camera_intrinsics-0000001051140882-V5) + [ARCamera](https://developer.huawei.com/consumer/en/doc/development/HMSCore-Library-V5/camera-0000001050121437-V5) )
 - principalPoint : 718.911 543.41327 // (cx, cy)

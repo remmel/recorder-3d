@@ -82,7 +82,7 @@ public class RecorderActivity extends Activity {
                 config.setFocusMode(ARConfigBase.FocusMode.AUTO_FOCUS);
 //                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
                // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
-                //config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH);
+//                config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH); //default is 1
 
                 config.setPreviewSize(3968, 2976); //default is 1440,1080
                 logSupportedResolution();

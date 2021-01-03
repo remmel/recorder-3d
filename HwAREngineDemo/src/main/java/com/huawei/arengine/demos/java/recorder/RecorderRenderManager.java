@@ -148,6 +148,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         ARPose arPose = arFrame.getCamera().getPose();
 
+
         // TODO get camera intrinsics
         // The size of the projection matrix is 4 * 4.
         float[] projectionMatrix = new float[16];
@@ -164,20 +165,20 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         CsvPose csvPose = new CsvPose(numFrameStr, arPose, projectionMatrix);
 //        String fpsStr = "Fps: "+fps.getFps()+"\n";
-        poseTextView.setText(csvPose.toString());
+        poseTextView.setText(csvPose.toString()+" "+numFrame);
 
         if(arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return;
-        if(numFrame % 5 != 0) return; //only save part of frames
-
+        if(numFrame % 100 != 0) return; //only save part of frames
 
         //only writing bin is mandatory, others writing could be done after to avoid slowing the phone
-        ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage() //0.06s
+//        ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage() //0.06s
+        ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr+"_image.jpg"));
 //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
         ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth16.bin")); // 0.001s
 //        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png")); // 0.08s
 //        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply")); //0.15s
 //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
-//        ImageUtils.writeObj( arFrame.acquirePointCloud(), new File(dir, "scene_mesh_"+numFrame+".obj"));
+//        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
 
         csvPoses.add(csvPose);
     }

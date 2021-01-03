@@ -52,7 +52,7 @@ public class ImageUtilsTest {
      * Create multiples tetrahedrons
      */
     @Test
-    public void createPlyTetrahedrons() throws IOException {
+    public void createPlyTetrahedrons() {
         List<PlyProp> world = new ArrayList<>();
 
         Quat4d q = new Quat4d(0.01591082,0.983769,0.17815615,-0.0141543); //36
