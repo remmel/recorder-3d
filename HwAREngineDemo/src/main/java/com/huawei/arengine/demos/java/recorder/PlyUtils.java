@@ -95,6 +95,8 @@ public class PlyUtils {
      * - In general avoid wrapping fos in PrintStream or DataOutputStream
      * - fos.write(prop.toString().getBytes()) 2x quicker than ps.println(prop.toString());
      * - quicker to allocate ByteBuffer for a PlyProp than 6 write (2-3x)
+     * - TODO use RandomAccessFile to write whole file FileChannel rwChannel = new RandomAccessFile("textfile.txt", "rw").getChannel();
+     *   ByteBuffer wrBuf = rwChannel.map(FileChannel.MapMode.READ_WRITE, 0, buffer.length * nbVertrex);or (){wrBuf.put(buffer); } rwChannel.close();
      */
     public static void merge(String posesPath, String plyPath, boolean isAscii) throws IOException {
         String dir =  Paths.get(posesPath).getParent().toString();

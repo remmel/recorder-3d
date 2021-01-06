@@ -25,9 +25,20 @@ TODO:
 - choose photo resolution
 - hi-res only some key image as it slow down the app
 - try using a thread to save hi-res image
-- send images to server merge depth (TSDF)
 - create obj from ply
 - project images on obj
+- send images to server merge depth (TSDF - linux - CPU)
+  - https://github.com/tum-vision/fastfusion (PNG depth format TODO; reconstrution only)
+  - https://pcl.readthedocs.io/projects/tutorials/en/latest/using_kinfu_large_scale.html - Point Cloud Library
+  - OpenCV kinfu https://docs.opencv.org/master/d8/d1f/classcv_1_1kinfu_1_1KinFu.html
+  - https://github.com/PrimozLavric/MarchingCubes
+  - https://github.com/ros-industrial/yak
+  - https://github.com/andyzeng/tsdf-fusion / https://github.com/andyzeng/tsdf-fusion-python (CUDA needed?) (Ubuntu)
+  - https://github.com/Nerei/kinfu_remake
+  - https://github.com/personalrobotics/OpenChisel
+  - https://github.com/MikeSafonov/java-marching-cubes
+  - https://github.com/sdmiller/cpu_tsdf
+  - https://github.com/pedropro/OMG_Depth_Fusion
 
 Camera Intrinsics (Honor View 20 - AR Engine : [ARCameraIntrinsics](https://developer.huawei.com/consumer/en/doc/HMSCore-References-V5/camera_intrinsics-0000001051140882-V5) + [ARCamera](https://developer.huawei.com/consumer/en/doc/development/HMSCore-Library-V5/camera-0000001050121437-V5) )
 - principalPoint : 718.911 543.41327 // (cx, cy)
