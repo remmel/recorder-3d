@@ -39,6 +39,7 @@ dependencies {
     implementation 'de.javagl:obj:0.3.0'
     implementation 'com.huawei.hms:arenginesdk:2.15.0.1'
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.openpnp:opencv:4.3.0-3'
 
     // Required for instrumented tests
     androidTestImplementation 'com.android.support:support-annotations:24.0.0'

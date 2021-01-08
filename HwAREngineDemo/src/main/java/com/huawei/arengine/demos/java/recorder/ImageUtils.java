@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
 import android.util.Log;
+
 import com.huawei.hiar.ARPointCloud;
 import com.huawei.hiar.ARSceneMesh;
 
