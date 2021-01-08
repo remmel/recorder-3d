@@ -313,8 +313,6 @@ public class ImageUtils {
         }
 
         mat.put(0, 0, depth16);
-        //System.out.println("mat = " + mat.dump());
-
         Imgcodecs.imwrite(png, mat);
     }
 }

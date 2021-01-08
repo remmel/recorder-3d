@@ -16,9 +16,9 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
-public class ImageUtilsTest {
+public class ImageUtilsInstrumentedTest {
 
-    private static final String TAG = ImageUtilsTest.class.getSimpleName();
+    private static final String TAG = ImageUtilsInstrumentedTest.class.getSimpleName();
 
     private static final File DIR = InstrumentationRegistry.getInstrumentation().getTargetContext().getExternalFilesDir("test");
 //    private static final String DIR = "/storage/emulated/0/Android/data/com.huawei.arenginesdk.demo/files/test";
