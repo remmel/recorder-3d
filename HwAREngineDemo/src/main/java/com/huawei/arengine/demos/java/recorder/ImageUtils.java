@@ -12,6 +12,10 @@ import android.util.Log;
 import com.huawei.hiar.ARPointCloud;
 import com.huawei.hiar.ARSceneMesh;
 
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +26,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -285,5 +291,30 @@ public class ImageUtils {
             }
         }
         return rgb;
+    }
+
+    public static void convertDepth16binToDepth16TumPng(String bin,  int width, int height, String png) throws IOException {
+        byte[] bytes = Files.readAllBytes(Paths.get(bin));
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
+        ShortBuffer sBuffer = buffer.asShortBuffer();
+        short[] depth16 = new short[width*height];
+
+        Mat mat = Mat.eye(height, width, CvType.CV_16UC1); //max is 65536 == 65meters / 16 bits = 2 bytes
+
+        int i=0;
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                short depthSample = sBuffer.get(); //depth16[y*width + x];
+                short depthRange = (short) (depthSample & 0x1FFF);
+//                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
+                depth16[h*width+w] = (short)(depthRange);
+            }
+        }
+
+        mat.put(0, 0, depth16);
+        //System.out.println("mat = " + mat.dump());
+
+        Imgcodecs.imwrite(png, mat);
     }
 }

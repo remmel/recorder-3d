@@ -39,9 +39,23 @@ dependencies {
     implementation 'de.javagl:obj:0.3.0'
     implementation 'com.huawei.hms:arenginesdk:2.15.0.1'
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.openpnp:opencv:4.3.0-3'
+
+//    implementation 'org.openpnp:opencv:4.3.0-3' //nu.pattern.OpenCV.loadLocally(); - not android
+
+    implementation "org.bytedeco:javacpp:1.5.4" // Loader.load(org.bytedeco.javacpp.opencv_java.class); //https://github.com/bytedeco/javacpp
+    implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4"
+    implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.41:android-arm"
+    implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:android-arm64"
+    implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:android-x86"
+
+    testImplementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:windows-x86_64"
+    testImplementation "org.bytedeco:javacv-platform:1.5.4" ////Loader.load(org.bytedeco.opencv.opencv_java.class);
 
     // Required for instrumented tests
     androidTestImplementation 'com.android.support:support-annotations:24.0.0'
     androidTestImplementation 'com.android.support.test:runner:0.5'
+
+//    packagingOptions {
+//        exclude 'META-INF/native-image/ios-x86_64/jnijavacpp/reflect-config.json'
+//    }
 }

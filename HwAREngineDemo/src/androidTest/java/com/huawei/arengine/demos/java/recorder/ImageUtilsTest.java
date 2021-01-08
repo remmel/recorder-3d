@@ -6,11 +6,15 @@ import android.graphics.BitmapFactory;
 import androidx.test.InstrumentationRegistry;
 
 import org.junit.Test;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import static org.junit.Assert.assertEquals;
 
 public class ImageUtilsTest {
 
@@ -48,5 +52,19 @@ public class ImageUtilsTest {
         int pixel = bitmap.getPixel(10,10);
 
         IoUtils.writeBitmapAsPng(new File(DIR + "/tum/remy.png"), bitmap);
+    }
+
+    @Test
+    public void testOpenCVAndroid() {
+        org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
+        Mat mat = Mat.eye(3, 3, CvType.CV_8UC1);
+        assertEquals("dump string size", 47, mat.dump().length());
+    }
+
+    @Test
+    public void bin2png16bAndroid() throws IOException {
+        org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
+        String depth16 = DIR + "/00003795_depth16.bin"; // DEPTH16;
+        ImageUtils.convertDepth16binToDepth16TumPng(depth16, 240, 180, depth16+".png");
     }
 }
