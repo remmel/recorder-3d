@@ -16,11 +16,10 @@ Features :
 - Save rgb images (3264x2448 - png + bin)
 - Save poses in CSV [download](doc/poses.csv)
 - Save rgbd ply [download](HwAREngineDemo/src/test/resources/00000012.ply) (TODO enable it from UI)
+- Export to PNG Grayscale 16bits (tum; openCV: CV_16UC1) (TODO enable it from UI)
 
 TODO:
 - ply: get depth sensor intrinsics [#1083](https://github.com/google-ar/arcore-android-sdk/issues/1083) + extrinsics between between 2 cameras (try to get [arFrame.acquireSceneMesh()](https://developer.huawei.com/consumer/en/doc/development/HMSCore-References-V5/frame-0000001050121447-V5#EN-US_TOPIC_0000001050126786__section167911410271) ply/obj and compare with mine) [#638](https://github.com/google-ar/arcore-android-sdk/issues/638#issuecomment-438785104)
-- save depth in tum format / how to save 16 bit monochrome PNG?
-- convert tum format to depth16 format
 - merge PLY using poses via UI (only test currently)
 - choose photo resolution
 - hi-res only some key image as it slow down the app
@@ -30,7 +29,7 @@ TODO:
 - send images to server merge depth (TSDF - linux - CPU)
   - https://github.com/tum-vision/fastfusion (PNG depth format TODO; reconstrution only)
   - https://pcl.readthedocs.io/projects/tutorials/en/latest/using_kinfu_large_scale.html - Point Cloud Library
-  - OpenCV kinfu https://docs.opencv.org/master/d8/d1f/classcv_1_1kinfu_1_1KinFu.html
+  - OpenCV kinfu https://docs.opencv.org/master/d8/d1f/classcv_1_1kinfu_1_1KinFu.html https://github.com/microsoft/Azure-Kinect-Samples/tree/master/opencv-kinfu-samples
   - https://github.com/PrimozLavric/MarchingCubes
   - https://github.com/ros-industrial/yak
   - https://github.com/andyzeng/tsdf-fusion / https://github.com/andyzeng/tsdf-fusion-python (CUDA needed?) (Ubuntu)

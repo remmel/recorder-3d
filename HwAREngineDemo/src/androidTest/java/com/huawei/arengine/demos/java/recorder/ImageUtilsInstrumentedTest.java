@@ -1,7 +1,6 @@
 package com.huawei.arengine.demos.java.recorder;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 import androidx.test.InstrumentationRegistry;
 
@@ -46,13 +45,6 @@ public class ImageUtilsInstrumentedTest {
         IoUtils.writeBitmapAsPng(new File(DIR + "/tmp_image_writeYuvViaJpg.png"), bitmap2); //just to check, we don't care it's PNG
     }
 
-    @Test //TODO
-    public void tumpng() throws IOException {
-        Bitmap bitmap = BitmapFactory.decodeFile(TUMDEPTH);
-        int pixel = bitmap.getPixel(10,10);
-
-        IoUtils.writeBitmapAsPng(new File(DIR + "/tum/remy.png"), bitmap);
-    }
 
     @Test
     public void testOpenCVAndroid() {
@@ -65,6 +57,6 @@ public class ImageUtilsInstrumentedTest {
     public void bin2png16bAndroid() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
         String depth16 = DIR + "/00003795_depth16.bin"; // DEPTH16;
-        ImageUtils.convertDepth16binToDepth16TumPng(depth16, 240, 180, depth16+".png");
+        ImageUtils.convertDepth16binToPng16GrayscaleTum(depth16, 240, 180, depth16+".png");
     }
 }

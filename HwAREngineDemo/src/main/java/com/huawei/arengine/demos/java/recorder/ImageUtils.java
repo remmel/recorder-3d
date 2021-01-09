@@ -19,6 +19,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -293,7 +294,7 @@ public class ImageUtils {
         return rgb;
     }
 
-    public static void convertDepth16binToDepth16TumPng(String bin,  int width, int height, String png) throws IOException {
+    public static void convertDepth16binToPng16GrayscaleTum(String bin, int width, int height, String png) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(bin));
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -314,5 +315,20 @@ public class ImageUtils {
 
         mat.put(0, 0, depth16);
         Imgcodecs.imwrite(png, mat);
+    }
+
+    public static void convertDepth16binToPng16GrayscaleTumBulk(String dir) throws IOException {
+        File d = new File(dir);
+
+        String[] filenames = d.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith("_depth16.bin");
+            }
+        });
+
+        for (String binfn: filenames) {
+            convertDepth16binToPng16GrayscaleTum(dir + "/" + binfn,240, 180, dir + "/" + binfn + ".png");
+        }
     }
 }

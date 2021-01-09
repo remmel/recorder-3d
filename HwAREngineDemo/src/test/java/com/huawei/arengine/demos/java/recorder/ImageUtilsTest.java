@@ -104,6 +104,14 @@ public class ImageUtilsTest {
     public void bin2png16b() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
         String depth16 = DIR + "/00003795_depth16.bin"; // DEPTH16;
-        ImageUtils.convertDepth16binToDepth16TumPng(depth16, W, H, depth16+".png");
+        ImageUtils.convertDepth16binToPng16GrayscaleTum(depth16, W, H, depth16+".png");
     }
+
+    @Test
+    public void bulkconvert() throws IOException {
+        org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
+        ImageUtils.convertDepth16binToPng16GrayscaleTumBulk("C:\\Users\\remme\\workspace\\dataset\\2020-12-17_141504");
+    }
+
+    //TODO https://stackoverflow.com/questions/59715460/how-to-visualize-a-16-bit-grayscale-image-with-cv2-imshow
 }
