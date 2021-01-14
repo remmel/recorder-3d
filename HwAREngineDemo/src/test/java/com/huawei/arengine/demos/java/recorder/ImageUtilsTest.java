@@ -6,11 +6,13 @@ import org.junit.Test;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.vecmath.Quat4d;
@@ -25,6 +27,8 @@ public class ImageUtilsTest {
     private static final String DIR = "src/test/resources";
     private static final String DEPTH16 = DIR + "/00000012_depth16.bin";
     private static final String POSES = DIR + "/poses.csv";
+    private static final String DEPTH16_2 = DIR + "/00003795_depth16.bin";
+    private static final String DEPTH16PNG_2 = DIR + "/00003795_depth16.bin.png";
     private static final int W = 240; //width of depth16
     private static final int H = 180; //height of depth16
 
@@ -94,7 +98,6 @@ public class ImageUtilsTest {
 
     @Test
     public void testOpenCVWin() {
-//        nu.pattern.OpenCV.loadLocally();
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class); // org.bytedeco.opencv.opencv_java
         Mat mat = Mat.eye(3, 3, CvType.CV_8UC1);
         assertEquals("dump string size", 47, mat.dump().length());
@@ -103,15 +106,20 @@ public class ImageUtilsTest {
     @Test
     public void bin2png16b() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
-        String depth16 = DIR + "/00003795_depth16.bin"; // DEPTH16;
-        ImageUtils.convertDepth16binToPng16GrayscaleTum(depth16, W, H, depth16+".png");
-    }
-
-    @Test
-    public void bulkconvert() throws IOException {
-        org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
-        ImageUtils.convertDepth16binToPng16GrayscaleTumBulk("C:\\Users\\remme\\workspace\\dataset\\2020-12-17_141504");
+        ImageUtils.convertDepth16binToPng16GrayscaleTum(DEPTH16_2, W, H, DIR + "/tmp_00003795_depth16.bin.png");
     }
 
     //TODO https://stackoverflow.com/questions/59715460/how-to-visualize-a-16-bit-grayscale-image-with-cv2-imshow
+
+    @Test
+    public void png16AndRgbToPly() {
+        List<PlyProp> props = PlyUtils.getPlyFromPng16(DEPTH16PNG_2);
+        PlyUtils.writePly(props, DIR + "/tmp_00003795_depth16.bin.png.ply", false);
+    }
+
+    @Test
+    public void pclToPly() throws IOException {
+        List<PlyProp> props = PlyUtils.getPlyFromPcl(DIR + "/00000018.pcl");
+        PlyUtils.writePly(props, DIR + "/tmp_00000018.pcl.ply", true);
+    }
 }

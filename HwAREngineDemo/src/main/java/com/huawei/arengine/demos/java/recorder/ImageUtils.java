@@ -14,7 +14,9 @@ import com.huawei.hiar.ARSceneMesh;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -299,7 +301,7 @@ public class ImageUtils {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
         ShortBuffer sBuffer = buffer.asShortBuffer();
-        short[] depth16 = new short[width*height];
+        short[] depthTum = new short[width*height];
 
         Mat mat = Mat.eye(height, width, CvType.CV_16UC1); //max is 65536 == 65meters / 16 bits = 2 bytes
 
@@ -309,11 +311,11 @@ public class ImageUtils {
                 short depthSample = sBuffer.get(); //depth16[y*width + x];
                 short depthRange = (short) (depthSample & 0x1FFF);
 //                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
-                depth16[h*width+w] = (short)(depthRange);
+                depthTum[h*width+w] = (short)(depthRange * 5); //tum rgbd is 5==1mm / 5000==1mm
             }
         }
 
-        mat.put(0, 0, depth16);
+        mat.put(0, 0, depthTum);
         Imgcodecs.imwrite(png, mat);
     }
 
@@ -328,7 +330,21 @@ public class ImageUtils {
         });
 
         for (String binfn: filenames) {
-            convertDepth16binToPng16GrayscaleTum(dir + "/" + binfn,240, 180, dir + "/" + binfn + ".png");
+            convertDepth16binToPng16GrayscaleTum(dir + "/" + binfn,240, 180, dir + "/" + binfn + "640.png");
         }
+    }
+
+    public static void resizeRgb(String srcPath, String dstPath, int w, int h) {
+        Mat src = Imgcodecs.imread(srcPath);
+        Mat dst = new Mat();
+        Imgproc.resize(src, dst, new Size(w, h));
+        Imgcodecs.imwrite(dstPath, dst);
+    }
+
+    public static void resizeDepthPng(String srcPath, String dstPath, int w, int h) {
+        Mat src = Imgcodecs.imread(srcPath);
+        Mat dst = new Mat(w, h, CvType.CV_16UC1);
+        Imgproc.resize(src, dst, new Size(w, h));
+        Imgcodecs.imwrite( dstPath, dst);
     }
 }
