@@ -79,13 +79,13 @@ public class RecorderActivity extends Activity {
                 }
                 mArSession = new ARSession(this);
                 ARWorldTrackingConfig config = new ARWorldTrackingConfig(mArSession);
-                config.setFocusMode(ARConfigBase.FocusMode.AUTO_FOCUS);
+                config.setFocusMode(ARConfigBase.FocusMode.AUTO_FOCUS); //to get a way better img quality, but getFocalLength returns fixed value
 //                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
                // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
 //                config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH); //default is 1
 
-                config.setPreviewSize(3968, 2976); //default is 1440,1080
-                logSupportedResolution();
+                  config.setPreviewSize(3968, 2976); //default is 1440,1080
+//                logSupportedResolution();
 
                 // mArSession.getCameraConfig().getTextureDimensions()
                 mArSession.configure(config);

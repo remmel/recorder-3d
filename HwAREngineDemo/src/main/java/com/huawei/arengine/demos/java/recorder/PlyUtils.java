@@ -33,13 +33,12 @@ public class PlyUtils {
     }
 
     // TODO get intrinsics rgb & d and extrinsics between them
-    //TODO create Bitmap interface
-
+    // TODO create Bitmap interface
     protected static List<PlyProp> getPly(short[][] depthInMm, int w, int h, Bitmap rgb){
 //        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
 //        float fy = 170;
-        float fx = 178.8f;
-        float fy = 178.8f;
+        float fx = 178.824f; //same focal as rgb camera
+        float fy = 179.291f;
 
         //if depth=240x180 and rgb=1440x1080 then ratio=6 // rgb is 6x bigger than depth
         float ratioRgbdW = rgb != null ? (rgb.getWidth() / (float)w) : 0;

@@ -17,12 +17,11 @@ public class CsvPose {
     protected double yaw;
     protected double pitch;
     protected double roll;
-    protected float[] projectionMatrix;
 
     private static String DELIMITER = ",";
 
     ////north : https://github.com/google-ar/arcore-android-sdk/issues/119
-    public CsvPose(String frameId, ARPose pose, float[] projectionMatrix) {
+    public CsvPose(String frameId, ARPose pose) {
         this.frameId = frameId;
         this.p = pose;
 
@@ -31,8 +30,6 @@ public class CsvPose {
         pitch = Math.toDegrees(Math.atan2(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z));
         yaw = Math.toDegrees(Math.atan2(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z));
         roll = Math.toDegrees(Math.asin(2 * q.x * q.y + 2 * q.z * q.w));
-
-        this.projectionMatrix = projectionMatrix;
     }
 
     public CsvPose(String row) {
@@ -46,9 +43,6 @@ public class CsvPose {
             yaw = Double.parseDouble(cols[8]);
             pitch = Double.parseDouble(cols[9]);
             roll = Double.parseDouble(cols[10]);
-
-            if(cols.length > 11)
-                projectionMatrix = parseFloatList(cols[11]);
         }
     }
 
@@ -86,7 +80,7 @@ public class CsvPose {
                 .append(pitch).append(DELIMITER)
                 .append(roll).append(DELIMITER);
 
-        return sb.toString() + join(projectionMatrix, ' ');
+        return sb.toString();
     }
 
     protected static String join(float[] values, char delimiter) {
