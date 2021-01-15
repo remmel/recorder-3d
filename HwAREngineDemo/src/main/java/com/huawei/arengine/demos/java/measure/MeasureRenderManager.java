@@ -117,15 +117,8 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         else {frame++; return; }
 
         Image image = arFrame.acquireDepthImage();
-
-        DepthInfo diCenter = getDepthInfo(image, 1/2f, 1/2f);
-        DepthInfo diLeft = getDepthInfo(image, 1/2f, 1/8f);
-        DepthInfo diRight = getDepthInfo(image, 1/2f, 7/8f);
-        depthTextView.setText(
-                "L:"+diLeft.toString() +"\n"
-                + "C:" +diCenter.toString() +"\n"
-                + "R:"+diRight.toString()
-        );
+        DepthInfo di = getDepthInfo(image, 1/2f, 1/2f);
+        depthTextView.setText(di.toString());
     }
 
     protected DepthInfo getDepthInfo(Image image, float x, float y) {
@@ -138,7 +131,7 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         return new DepthInfo(depthSample);
     }
 
-    public class DepthInfo {
+    private class DepthInfo {
         public DepthInfo(int depthSample) {
             range = (short) (depthSample & 0x1FFF); //https://developer.android.com/reference/android/graphics/ImageFormat#DEPTH16
             confidence = (short) ((depthSample >> 13) & 0x7);
@@ -149,7 +142,7 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
         short confidence;
         float confidenceRatio;
 
-        public int getPercentage() {
+        private int getPercentage() {
             return (int)(confidenceRatio *100);
         }
 

@@ -115,6 +115,3 @@ https://quaternions.online/
 
 ![Screenshot_resized25](doc/Screenshot_resized25.jpg)
 Measure the distance of the center
-
-TODO:
-- display something to understand where is measured the depth (like coloring the central pixel)
