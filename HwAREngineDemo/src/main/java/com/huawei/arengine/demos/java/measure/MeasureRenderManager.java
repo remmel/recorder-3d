@@ -36,6 +36,8 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
 
     TextView depthTextView;
 
+    int frame = 0;
+
     private DisplayRotationManager mDisplayRotationManager;
 
     public MeasureRenderManager(Activity activity, Context context) {
@@ -110,20 +112,50 @@ public class MeasureRenderManager implements GLSurfaceView.Renderer {
     }
 
     private void updateDepthInfo(ARFrame arFrame) {
+        //update every 5 frames
+        if(frame>5) frame = 0;
+        else {frame++; return; }
+
         Image image = arFrame.acquireDepthImage();
+
+        DepthInfo diCenter = getDepthInfo(image, 1/2f, 1/2f);
+        DepthInfo diLeft = getDepthInfo(image, 1/2f, 1/8f);
+        DepthInfo diRight = getDepthInfo(image, 1/2f, 7/8f);
+        depthTextView.setText(
+                "L:"+diLeft.toString() +"\n"
+                + "C:" +diCenter.toString() +"\n"
+                + "R:"+diRight.toString()
+        );
+    }
+
+    protected DepthInfo getDepthInfo(Image image, float x, float y) {
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
         buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
-
         ShortBuffer shortDepthBuffer = buffer.asShortBuffer();
-
         int w = image.getWidth(); //240
         int h = image.getHeight(); //180
+        int depthSample = shortDepthBuffer.get((int)(w*h*x+w*y));
+        return new DepthInfo(depthSample);
+    }
 
-        int depthSample = shortDepthBuffer.get((w*h/2)+w/2);
-        short depthRange = (short) (depthSample & 0x1FFF); //https://developer.android.com/reference/android/graphics/ImageFormat#DEPTH16
-        short depthConfidence = (short) ((depthSample >> 13) & 0x7);
-        float depthPercentage = depthConfidence == 0 ? 1.f : (depthConfidence - 1) / 7.f;
+    public class DepthInfo {
+        public DepthInfo(int depthSample) {
+            range = (short) (depthSample & 0x1FFF); //https://developer.android.com/reference/android/graphics/ImageFormat#DEPTH16
+            confidence = (short) ((depthSample >> 13) & 0x7);
+            confidenceRatio = confidence == 0 ? 1.f : (confidence - 1) / 7.f;
+        }
 
-        depthTextView.setText("Depth: "+depthRange + "mm Confidence: " + (int)(depthPercentage*100) + "% _" + depthConfidence);
+        short range;
+        short confidence;
+        float confidenceRatio;
+
+        public int getPercentage() {
+            return (int)(confidenceRatio *100);
+        }
+
+        @Override
+        public String toString() {
+            return "Depth: "+this.range + "mm Confidence: " + this.getPercentage() + "%  (" + this.confidence+")";
+        }
     }
 }
