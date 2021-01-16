@@ -1,7 +1,6 @@
 package com.huawei.arengine.demos.java.recorder;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.util.Log;
 
 import org.opencv.core.CvType;
@@ -21,43 +20,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlyUtils {
+    private static final String TAG = PlyUtils.class.getSimpleName();//same focal as rgb camera
 
-    private static final String TAG = PlyUtils.class.getSimpleName();
+    // TODO must be parameters
+    // Fixed Intrinsics of my Honor 20 View. Even on my honor, focal is not fixed, depends of autofocus
+    // for 240x180 f=~180 it means 1m depth min/max world x [-0.66m,0.66m] (240/2/170=0.66) right?
+    // means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
+    public static final float FX_D = 178.824f;
+    public static final float FY_D = 179.291f;
+    public static final float CX_D = 119.819f;
+    public static final float CY_D = 89.13f;
+    public static final int W_D = 240;
+    public static final int H_D = 180;
 
     public static List<PlyProp> getPly(ByteBuffer depthBuffer, Bitmap rgb){
-        int w = 240; //TODO that data must be params
-        int h = 180;
         //depth
-        short[][] depth = ImageUtils.depth16ToDepthRangeArray(depthBuffer, w, h);
-        return getPly(depth, w, h, rgb);
+        short[][] depth = ImageUtils.depth16ToDepthRangeArray(depthBuffer, W_D, H_D);
+        return getPly(depth, W_D, H_D, rgb);
     }
 
-    // TODO get intrinsics rgb & d and extrinsics between them
-    // TODO create Bitmap interface
     protected static List<PlyProp> getPly(short[][] depthInMm, int w, int h, Bitmap rgb){
-//        float fx = 170; //mean 1m depth min/max world x [-0.7m,0.7m] (240/2/170=0.7) right? means Math.atan(0.7,1)*180/3.14*2=70° horizontal fov? depthfx = rgbfx / 6 as it should be similar
-//        float fy = 170;
-        float fx = 178.824f; //same focal as rgb camera
-        float fy = 179.291f;
-
         //if depth=240x180 and rgb=1440x1080 then ratio=6 // rgb is 6x bigger than depth
         float ratioRgbdW = rgb != null ? (rgb.getWidth() / (float)w) : 0;
         float ratioRgbdH = rgb != null ? (rgb.getHeight() / (float)h) : 0;
 
         List<PlyProp> plyProps = new ArrayList<>();
 
-        for (int x = 0; x<w ; x++) {
-            for(int y = 0; y<h; y++) {
-                float z = depthInMm[x][y] / 1000f; //base unit is meter, not millimeter
+        for (int u = 0; u<w ; u++) {
+            for(int v = 0; v<h; v++) {
+                float z = depthInMm[u][v] / 1000f; //base unit is meter, not millimeter
                 if(z == 0f) continue; //no depth value
-                if(y == 0) continue; //first row contains incorrect values
-                int cx = x - w/2;
-                int cy = y - h/2;
-                float xw = (float)cx * z / fx;
-                float yw = (float)cy * z / fy;
-
-                int pixel = rgb != null ? rgb.getPixel((int)(x*ratioRgbdW), (int)(y*ratioRgbdH)) : 0;
-                plyProps.add(new PlyProp(xw, yw, z,pixel));
+                if(v == 0) continue; //first row contains incorrect values
+                float x = (u - CX_D) * z / FX_D;
+                float y = (v - CY_D) * z / FY_D;
+                int pixel = rgb != null ? rgb.getPixel((int) (u * ratioRgbdW), (int) (v * ratioRgbdH)) : 0;
+                plyProps.add(new PlyProp(x, y, z, pixel));
             }
         }
         return plyProps;
@@ -176,5 +173,29 @@ public class PlyUtils {
         RandomAccessFile raf = new RandomAccessFile(plyPath, "rw");
         raf.writeBytes(PlyProp.getHeader(nbVertrex, isAscii));
         raf.close();
+    }
+
+    //TODO should be removed
+    public static short[] convertPropsToDepthPngHonorView(List<PlyProp> props) {
+        return convertPropsToDepthPng(props, W_D, H_D, FX_D, FY_D, CX_D, CY_D);
+    }
+
+    //no pose must have been applied
+    public static short[] convertPropsToDepthPng(List<PlyProp> props, int width, int height, float fx, float fy, float cx, float cy) {
+        short depth[] = new short[width*height];
+        for (PlyProp p: props) {
+            float u = (p.x*fx)/p.z + cx;
+            float v = (p.y*fy)/p.z + cy;
+
+            int ui = (int) u;
+            int vi = (int) v;
+
+            if(ui>=width || ui< 0 || vi < 0 || vi >= height) {
+                throw new RuntimeException("wrong coordinates: ("+u+","+v+") - are the 3d points properly oriented?");
+            }
+
+            depth[vi*width+ui] = (short) (p.z * 1000);
+        }
+        return depth;
     }
 }

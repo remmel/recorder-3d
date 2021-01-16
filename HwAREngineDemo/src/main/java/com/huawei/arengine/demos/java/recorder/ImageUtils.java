@@ -296,7 +296,7 @@ public class ImageUtils {
         return rgb;
     }
 
-    public static void convertDepth16binToPng16GrayscaleTum(String bin, int width, int height, String png) throws IOException {
+    public static void writeDepth16binInPng16GrayscaleTum(String bin, int width, int height, String png) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(bin));
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -309,9 +309,9 @@ public class ImageUtils {
         for (int h = 0; h < height; h++) {
             for (int w = 0; w < width; w++) {
                 short depthSample = sBuffer.get(); //depth16[y*width + x];
-                short depthRange = (short) (depthSample & 0x1FFF);
+                short depthMm = (short) (depthSample & 0x1FFF);
 //                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
-                depthTum[h*width+w] = (short)(depthRange * 5); //tum rgbd is 5==1mm / 5000==1mm
+                depthTum[h*width+w] = (short)(depthMm * 5); //tum rgbd is 5==1mm / 5000==1mm
             }
         }
 
@@ -319,7 +319,16 @@ public class ImageUtils {
         Imgcodecs.imwrite(png, mat);
     }
 
-    public static void convertDepth16binToPng16GrayscaleTumBulk(String dir) throws IOException {
+    public static void writeDepthArrayInPng16GrayscaleTum(short[] depthInMm, int width, int height, String png) {
+        Mat mat = Mat.eye(height, width, CvType.CV_16UC1); //max is 65536 == 65meters / 16 bits = 2 bytes
+//        int size = height*width;
+//        for(int i=0; i< size; i++) //more efficent way to do that with opencv?
+//            depthInMm[i]*=5; //FIXME why I don't need to multiply that by 5, as I want it in "tum" format where 5000 = 1m, see test
+        mat.put(0, 0, depthInMm);
+        Imgcodecs.imwrite(png, mat);
+    }
+
+    public static void writeDepth16binInPng16GrayscaleTumBulk(String dir) throws IOException {
         File d = new File(dir);
 
         String[] filenames = d.list(new FilenameFilter() {
@@ -330,7 +339,7 @@ public class ImageUtils {
         });
 
         for (String binfn: filenames) {
-            convertDepth16binToPng16GrayscaleTum(dir + "/" + binfn,240, 180, dir + "/" + binfn + "640.png");
+            writeDepth16binInPng16GrayscaleTum(dir + "/" + binfn,240, 180, dir + "/" + binfn + "640.png");
         }
     }
 

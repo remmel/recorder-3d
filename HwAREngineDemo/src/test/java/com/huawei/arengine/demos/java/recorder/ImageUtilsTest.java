@@ -6,13 +6,11 @@ import org.junit.Test;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.vecmath.Quat4d;
@@ -106,7 +104,7 @@ public class ImageUtilsTest {
     @Test
     public void bin2png16b() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
-        ImageUtils.convertDepth16binToPng16GrayscaleTum(DEPTH16_2, W, H, DIR + "/tmp_00003795_depth16.bin.png");
+        ImageUtils.writeDepth16binInPng16GrayscaleTum(DEPTH16_2, W, H, DIR + "/tmp_00003795_depth16.bin.png");
     }
 
     //TODO https://stackoverflow.com/questions/59715460/how-to-visualize-a-16-bit-grayscale-image-with-cv2-imshow
@@ -121,5 +119,12 @@ public class ImageUtilsTest {
     public void pclToPly() throws IOException {
         List<PlyProp> props = PlyUtils.getPlyFromPcl(DIR + "/00000018.pcl");
         PlyUtils.writePly(props, DIR + "/tmp_00000018.pcl.ply", true);
+    }
+
+    @Test
+    public void plyToPng() {
+        List<PlyProp> props = PlyUtils.getPlyFromPng16(DEPTH16PNG_2);
+        short[] depths = PlyUtils.convertPropsToDepthPngHonorView(props);
+        ImageUtils.writeDepthArrayInPng16GrayscaleTum(depths, W, H, DIR + "/tmp_00003795_depth16.bin.png.ply.png");
     }
 }

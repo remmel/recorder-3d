@@ -57,6 +57,6 @@ public class ImageUtilsInstrumentedTest {
     public void bin2png16bAndroid() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
         String depth16 = DIR + "/00003795_depth16.bin"; // DEPTH16;
-        ImageUtils.convertDepth16binToPng16GrayscaleTum(depth16, 240, 180, depth16+".png");
+        ImageUtils.writeDepth16binInPng16GrayscaleTum(depth16, 240, 180, depth16+".png");
     }
 }

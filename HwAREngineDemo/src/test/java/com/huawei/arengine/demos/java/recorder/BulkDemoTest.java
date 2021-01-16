@@ -12,7 +12,7 @@ public class BulkDemoTest {
     @Test
     public void bulkconvertDepth() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
-        ImageUtils.convertDepth16binToPng16GrayscaleTumBulk("E:\\dataset\\2020-12-17_141504");
+        ImageUtils.writeDepth16binInPng16GrayscaleTumBulk("E:\\dataset\\2020-12-17_141504");
     }
 
     @Test
