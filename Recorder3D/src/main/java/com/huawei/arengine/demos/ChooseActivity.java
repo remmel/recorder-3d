@@ -18,7 +18,6 @@ package com.huawei.arengine.demos;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,13 +26,11 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.preference.PreferenceManager;
 
 import com.huawei.arengine.demos.common.PermissionManager;
 import com.huawei.arengine.demos.java.measure.MeasureActivity;
 import com.huawei.arengine.demos.java.recorder.RecorderActivity;
 import com.huawei.arengine.demos.java.recorder.preferences.RecorderPreferenceActivity;
-import com.huawei.arengine.demos.java.recorder.preferences.RecorderPreferenceFragment;
 
 /**
  * This class provides the permission verification and sub-AR example redirection functions.
@@ -84,32 +81,12 @@ public class ChooseActivity extends Activity {
      * @param view View
      */
     public void onClick(View view) {
-//        if (!isFirstClick) {
-//            return;
-//        } else {
-//            isFirstClick = false;
-//        }
+        if (!isFirstClick) {
+            return;
+        } else {
+            isFirstClick = false;
+        }
         switch (view.getId()) {
-            case R.id.btn_WorldAR_Java:
-                startActivity(new Intent(this,
-                    com.huawei.arengine.demos.java.world.WorldActivity.class));
-                break;
-            case R.id.btn_FaceAR:
-                startActivity(new Intent(this,
-                    com.huawei.arengine.demos.java.face.FaceActivity.class));
-                break;
-            case R.id.btn_body3d:
-                startActivity(new Intent(this,
-                    com.huawei.arengine.demos.java.body3d.BodyActivity.class));
-                break;
-            case R.id.btn_hand:
-                startActivity(new Intent(this,
-                    com.huawei.arengine.demos.java.hand.HandActivity.class));
-                break;
-            case R.id.btn_health:
-                startActivity(new Intent(this,
-                    com.huawei.arengine.demos.java.health.HealthActivity.class));
-                break;
             case R.id.btn_measure:
                 startActivity(new Intent(this, MeasureActivity.class));
                 break;
@@ -118,11 +95,6 @@ public class ChooseActivity extends Activity {
                 break;
             case R.id.btn_recorder_settings:
                 startActivity(new Intent(this, RecorderPreferenceActivity.class));
-                break;
-            case R.id.btn_info:
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                Boolean b = sharedPreferences.getBoolean(getString(R.string.pref_rgbPreview), false);
-                Log.e(TAG, "R.string.pref_rgbPreview="+b);
                 break;
             default:
                 Log.e(TAG, "onClick error!");
