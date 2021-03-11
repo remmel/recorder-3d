@@ -1,0 +1,34 @@
+<resources>
+    <!-- Repeat Preference : how ofter the image will be saved: numFrame%repeat_value==0 -->
+    <string-array name="repeat_entries">
+        <item>0.03s 1/30 No delay</item>
+        <item>0.07s 2/30</item>
+        <item>0.10s 3/30</item>
+        <item>0.20s 6/30</item>
+        <item>0.50s 15/30</item>
+        <item>1s</item>
+        <item>2s</item>
+        <item>3s</item>
+        <item>5s</item>
+        <item>7s</item>
+        <item>10s</item>
+        <item>15s</item>
+        <item>20s</item>
+    </string-array>
+
+    <string-array name="repeat_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>6</item>
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>90</item>
+        <item>150</item>
+        <item>210</item>
+        <item>300</item>
+        <item>450</item>
+        <item>600</item>
+    </string-array>
+</resources>

@@ -2,15 +2,23 @@ package com.huawei.arengine.demos.java.recorder;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
+import com.huawei.arengine.demos.java.recorder.preferences.AppSharedPreference;
 import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARCameraIntrinsics;
 import com.huawei.hiar.ARFrame;
@@ -24,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -55,30 +64,56 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     private DisplayRotationManager mDisplayRotationManager;
 
     long numFrame = 0;
+    long numFrameSaved = 0;
 
     private File dir; //folder where the rgb & depth images will be saved
 
-    private File fPose;
     private List<CsvPose> csvPoses = new ArrayList<>();
-
-    private Timer fps = new Timer();
 
     TextView poseTextView;
 
+    Button btnPhoto;
+    boolean takePhoto = false;
+    MediaPlayer _shootMP;
+    Switch btnVideo;
+
+    AppSharedPreference pref;
+
     private static final float RAD2DEG = (float) (180 / Math.PI);
+
+    protected FpsMeter fpsMeter = new FpsMeter();
 
     public RecorderRenderManager(Activity activity, Context context) {
         mActivity = activity;
         mContext = context;
+        pref = new AppSharedPreference(context);
 
-        String datestr = (new SimpleDateFormat("yyyy-MM-dd_HHmmss")).format(new Date());
-        dir = this.mContext.getExternalFilesDir(datestr);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        fPose = new File(dir, "poses.csv");
+//        fPose = new File(dir, "poses.csv");
         poseTextView = activity.findViewById(R.id.recorderPoseTextView);
+
+        btnPhoto = activity.findViewById(R.id.btn_recorder_photo);
+        btnPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+            }
+        });
+
+        btnVideo = activity.findViewById(R.id.btn_recorder_switch);
+
+        AppSharedPreference pref = new AppSharedPreference(context);
+    }
+
+    protected void takePhoto() {
+        takePhoto = true;
+        shootSound();
+    }
+
+    protected void initDir() {
+        if(dir == null) {
+            String datestr = (new SimpleDateFormat("yyyy-MM-dd_HHmmss")).format(new Date());
+            dir = this.mContext.getExternalFilesDir(datestr);
+        }
     }
 
     /**
@@ -149,7 +184,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     private void updateFrameRecording(ARFrame arFrame) {
         numFrame++;
 
-        if(numFrame % 10 != 0) return; //only save part of frames
+        float fps = fpsMeter.doFpsCalculate();
 
         ARPose arPose = arFrame.getCamera().getPose();
 
@@ -158,22 +193,40 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         String numFrameStr = String.format("%08d", numFrame);
 
         CsvPose csvPose = new CsvPose(numFrameStr, arPose);
-//        String fpsStr = "Fps: "+fps.getFps()+"\n";
-        poseTextView.setText(csvPose.toString()+" "+numFrame+"\n"+debugInstrinsics);
+        poseTextView.setText("FPS: " + fps + "\n" + csvPose.toString() + " " + numFrame + "\n" + debugInstrinsics + "\nFrame saved:" + numFrameSaved);
 
-        if(arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return;
+        if (arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return; //pose not ready yet
 
-        //only writing bin is mandatory, others writing could be done after to avoid slowing the phone
-        ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.jpg")); //arFrame.acquireCameraImage() //0.06s
-//        ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr+"_image.jpg"));
-//        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
-        ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth16.bin")); // 0.001s
-//        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png")); // 0.08s
-//        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply")); //0.15s
-//        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
-//        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
+        boolean videoDepth = btnVideo.isChecked() && pref.isDepthEnabled() && numFrame % pref.getDepthRepeat() == 0;
+        boolean videoRgbVga = btnVideo.isChecked() && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
+        boolean videoRgbPreview = btnVideo.isChecked() && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
 
-        csvPoses.add(csvPose);
+        if (takePhoto || videoDepth || videoRgbVga || videoRgbPreview) {
+
+            initDir(); //the 1st time or getDir() maybe nicer
+            csvPoses.add(csvPose);
+            numFrameSaved++;
+
+            if (takePhoto || videoDepth)
+                ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + "_depth16.bin")); // 0.001s
+
+            if (takePhoto || videoRgbVga)
+                ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr + "_image_vga.jpg"));
+
+            if (takePhoto || videoRgbPreview)
+                ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr + "_image.jpg"));
+
+
+            //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
+            //        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png")); // 0.08s
+            //        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply")); //0.15s
+            //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
+            //        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
+
+            takePhoto = false;
+        }
+
+
     }
 
     private String debugCameraInstrinsics(ARCamera arCamera) {
@@ -211,12 +264,27 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     }
 
     protected void writePoses() {
-        Path path = Paths.get(this.fPose.toURI());
+        if (this.csvPoses.size() == 0) return; //nothing to save
+        File f = new File(dir, "poses.csv");
         try {
-            Files.write(path, CsvPose.toCsvRows(this.csvPoses));
+            Files.write(f.toPath(), CsvPose.toCsvRows(this.csvPoses));
+//            PlyUtils.bulkWritePly(this.fPose.getParentFile()); //takes too much time to be done here
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e(TAG, "Cannot save poses: "+path);
+            Log.e(TAG, "Cannot save poses: " + f);
+        }
+        Toast.makeText(mContext, "Saved in " + f, Toast.LENGTH_LONG).show();
+    }
+
+    public void shootSound() {
+        AudioManager meng = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        int volume = meng.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+
+        if (volume != 0) {
+            if (_shootMP == null)
+                _shootMP = MediaPlayer.create(mContext, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+            if (_shootMP != null)
+                _shootMP.start();
         }
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HWAREngineDemo</string>
+    <string name="app_name">3D Recorder</string>
     <string name="plane_other">Other</string>
     <string name="plane_floor">Floor</string>
     <string name="plane_wall">Wall</string>
@@ -13,4 +13,17 @@
     <string name="arengine_install" priority="translator">INSTALL</string>
     <string name="arengine_install_app" priority="translator">Install the latest version of HUAWEI AR Engine to continue.</string>
     <string name="worldSceneMobileTips">Please move the mobile phone slowly to find the plane</string>
+
+    <!-- Prefs -->
+    <string name="pref_depth">pref_depth</string>
+    <string name="pref_depth_repeat">pref_depth_repeat</string>
+    <string name="pref_rgbVga">pref_rgbVga</string>
+    <string name="pref_rgbvga_repeat">pref_rgbvga_repeat</string>
+    <string name="pref_rgbPreview">pref_rgbPreview</string>
+    <string name="pref_rgbPreview_repeat">pref_rgbPreview_repeat</string>
+    <string name="pref_rbgPreview_resolution">pref_rbgPreview_resolution</string>
+    <string name="pref_rbgPreview_resolution_default_value">1440x1080</string>
+    <string name="pref_autofocus">pref_autofocus</string>
+    <string name="pref_repeat_default_value">30</string>
+
 </resources>

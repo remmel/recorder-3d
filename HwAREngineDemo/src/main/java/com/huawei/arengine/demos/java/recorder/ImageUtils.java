@@ -137,6 +137,22 @@ public class ImageUtils {
         return depth;
     }
 
+    protected static short[] depth16ToDepthRangeArray2(ByteBuffer byteBuffer, int w, int h) {
+        byteBuffer = byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        ShortBuffer sBuffer = byteBuffer.asShortBuffer();
+        short[] depth = new short[w*h];
+//        short d = sBuffer.get(21690);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                short depthSample = sBuffer.get(); //depth16[y*width + x];
+                short depthRange = (short) (depthSample & 0x1FFF);
+//                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
+                depth[y*w + x] = depthRange;
+            }
+        }
+        return depth;
+    }
+
     //for PLY
     protected static short[][] depth16ToDepth16Array(ByteBuffer byteBuffer, int w, int h) {
         byteBuffer = byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -317,6 +333,7 @@ public class ImageUtils {
 
         mat.put(0, 0, depthTum);
         Imgcodecs.imwrite(png, mat);
+        //buffer.clear();
     }
 
     public static void writeDepthArrayInPng16GrayscaleTum(short[] depthInMm, int width, int height, String png) {

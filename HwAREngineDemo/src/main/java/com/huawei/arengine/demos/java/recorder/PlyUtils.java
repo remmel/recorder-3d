@@ -17,6 +17,7 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PlyUtils {
@@ -96,13 +97,20 @@ public class PlyUtils {
             fb.get(xyzw);
             plyProps.add(new PlyProp(xyzw[0], xyzw[1], xyzw[2]));
         }
+        //byteBuffer.clear();
         return plyProps;
     }
 
     public static List<PlyProp> getPly(String depthPath, String rgbPath) throws IOException {
         ByteBuffer depthBuffer = ByteBuffer.wrap(Files.readAllBytes(Paths.get(depthPath)));
         Bitmap bitmap = ImageUtils.jpgToBitmap(rgbPath);
-        return getPly(depthBuffer, bitmap);
+        List<PlyProp> plys = getPly(depthBuffer, bitmap);
+        depthBuffer.clear(); //important, otherwise stackoverflow
+        return plys;
+    }
+
+    public static void writePly(String depthPath, String rgbPath, String plyPath, boolean isAscii) throws IOException {
+        PlyUtils.writePly(PlyUtils.getPly(depthPath, rgbPath), plyPath, isAscii);
     }
 
     public static void writePly(ByteBuffer depthBuffer, Bitmap rgb, File plyOutput) {
@@ -197,5 +205,25 @@ public class PlyUtils {
             depth[vi*width+ui] = (short) (p.z * 1000);
         }
         return depth;
+    }
+
+    public static void bulkWritePly(File dir) throws IOException { //apply poses
+        List<CsvPose> poses = CsvPose.fromCsvRows(Files.readAllLines(Paths.get(dir + "/poses.csv")));
+        Arrays.stream(dir.list())
+                .filter(s -> s.endsWith("_depth16.bin"))
+                .sorted()
+                .forEach(fn -> {
+                            String numFrame = fn.substring(0, 8);
+                            String depth16 = dir + "/" + fn;
+                            String jpg = dir + "/" + numFrame + "_image_vga.jpg";
+                            String ply = dir + "/" + numFrame + ".ply";
+                            try {
+                                PlyUtils.writePly(depth16, jpg, ply, false);
+                                Log.d(TAG, "convert to ply "+numFrame+" in "+dir);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                );
     }
 }

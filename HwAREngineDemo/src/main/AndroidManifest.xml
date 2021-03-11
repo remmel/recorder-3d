@@ -66,5 +66,9 @@
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="landscape" />
+
+        <activity
+            android:name="com.huawei.arengine.demos.java.recorder.preferences.RecorderPreferenceActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 </manifest>

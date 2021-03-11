@@ -3,19 +3,24 @@ package com.huawei.arengine.demos.java.recorder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.huawei.arengine.demos.R;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
+import com.huawei.arengine.demos.java.recorder.preferences.AppSharedPreference;
 import com.huawei.hiar.ARConfigBase;
 import com.huawei.hiar.AREnginesApk;
 import com.huawei.hiar.ARSession;
@@ -43,6 +48,8 @@ public class RecorderActivity extends Activity {
 
     private boolean isRemindInstall = false;
 
+    Button btnStop;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +70,15 @@ public class RecorderActivity extends Activity {
 
         mSurfaceView.setRenderer(mRecorderRenderManager);
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+        btnStop = findViewById(R.id.btn_recorder_stop);
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     @Override
@@ -77,17 +93,18 @@ public class RecorderActivity extends Activity {
                     finish();
                     return;
                 }
+                AppSharedPreference pref = new AppSharedPreference(this);
+
                 mArSession = new ARSession(this);
                 ARWorldTrackingConfig config = new ARWorldTrackingConfig(mArSession);
-                config.setFocusMode(ARConfigBase.FocusMode.AUTO_FOCUS); //to get a way better img quality, but getFocalLength returns fixed value
+                config.setFocusMode(pref.getFocusMode()); //Autofocus to get a way better img quality, but getFocalLength returns fixed value
 //                config.setSemanticMode(ARWorldTrackingConfig.SEMANTIC_PLANE);
-               // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
+                // config.setPowerMode(ARConfigBase.PowerMode.PERFORMANCE_FIRST);
 //                config.setEnableItem(ARConfigBase.ENABLE_DEPTH | ARConfigBase.ENABLE_MESH); //default is 1
 
-                  config.setPreviewSize(3968, 2976); //default is 1440,1080
-//                logSupportedResolution();
+                Size s = pref.getRgbPreviewResolution();
+                config.setPreviewSize(s.getWidth(), s.getHeight()); //default is 1440,1080
 
-                // mArSession.getCameraConfig().getTextureDimensions()
                 mArSession.configure(config);
                 mRecorderRenderManager.setArSession(mArSession);
             } catch (Exception capturedException) {
@@ -110,19 +127,14 @@ public class RecorderActivity extends Activity {
         mSurfaceView.onResume();
     }
 
-    /**
-     * https://developer.huawei.com/consumer/en/doc/HMSCore-References/config_base-0000001050119488-V5#EN-US_TOPIC_0000001050128723__section1231643615527
-     * https://github.com/HMS-Core/hms-AREngine-demo/issues/7
-     */
-    private void logSupportedResolution() throws CameraAccessException {
-        CameraManager cameraManager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
-        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics("0"); //cameraManager.getCameraIdList()
-        Size[] supportedPreviewSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(SurfaceTexture.class);
-
-        for (Size s: supportedPreviewSizes) {
-            if((float)s.getHeight() / s.getWidth() == 3f/4)
-                Log.d(TAG, "Supported: "+s);
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Take a photo when pressing the volume up or headset cable button
+        if(keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_VOLUME_UP){
+            mRecorderRenderManager.takePhoto();
+            return true;
         }
+        return super.onKeyDown(keyCode, event);
     }
 
     /**

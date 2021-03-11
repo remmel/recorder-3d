@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        app:key="@string/pref_autofocus"
+        app:summary="If AutoFocus, the image has better quality.\nIn Fixed Focus, the tracking might be better and relation between DEPTH and RGB better"
+        app:title="Autofocus" />
+
+    <PreferenceCategory app:title="Depth (240x180 DEPTH16 .bin)">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/pref_depth"
+            app:title="Save Depth" />
+        <ListPreference
+            app:defaultValue="@string/pref_repeat_default_value"
+            app:dependency="@string/pref_depth"
+            app:entries="@array/repeat_entries"
+            app:entryValues="@array/repeat_values"
+            app:key="@string/pref_depth_repeat"
+            app:title="Repeat mode interval"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="RGB VGA (640x480 .jpg)">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/pref_rgbVga"
+            app:title="Save RGB VGA" />
+        <ListPreference
+            app:defaultValue="@string/pref_repeat_default_value"
+            app:dependency="@string/pref_rgbVga"
+            app:entries="@array/repeat_entries"
+            app:entryValues="@array/repeat_values"
+            app:key="@string/pref_rgbvga_repeat"
+            app:title="Repeat mode interval"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="RGB Preview (.jpg)">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/pref_rgbPreview"
+            app:title="Save RGB Preview" />
+        <ListPreference
+            app:defaultValue="@string/pref_rbgPreview_resolution_default_value"
+            app:dependency="@string/pref_rgbPreview"
+            app:key="@string/pref_rbgPreview_resolution"
+            app:title="Resolution"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="@string/pref_repeat_default_value"
+            app:dependency="@string/pref_rgbPreview"
+            app:entries="@array/repeat_entries"
+            app:entryValues="@array/repeat_values"
+            app:key="@string/pref_rgbPreview_repeat"
+            app:title="Repeat mode interval"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

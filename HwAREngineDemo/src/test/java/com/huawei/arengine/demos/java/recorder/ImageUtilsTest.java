@@ -36,11 +36,15 @@ public class ImageUtilsTest {
     public void testCenterDepthRange() throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(DEPTH16));
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        short[][] depth = ImageUtils.depth16ToDepthRangeArray(buffer, W, H);
+//        short[][] depth = ImageUtils.depth16ToDepthRangeArray(buffer, W, H);
+//
+//        short center = depth[W/2][H/2];
 
-        short center = depth[W/2][H/2];
+//        assertEquals("depth(mm)", 1012, center);
 
-        assertEquals("depth(mm)", 1012, center);
+        short[] depth2 = ImageUtils.depth16ToDepthRangeArray2(buffer, W, H);
+        short center2 = depth2[H/2*W+W/2]; //21720
+        assertEquals("depth(mm)", 1012, center2);
     }
 
     protected List<PlyProp> getTetrahedronApplyPoseAndRgb(Quat4d q, Vector3d v, double scale, int rgb) {
@@ -101,6 +105,12 @@ public class ImageUtilsTest {
         assertEquals("dump string size", 47, mat.dump().length());
     }
 
+//    @Test
+//    public void testOpenCVWin2() {
+//        org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class); // org.bytedeco.opencv.opencv_java
+//        PlyUtils.getPlyFromPng16("C:\\Users\\remme\\Downloads\\1305031468.188327.png");
+//    }
+
     @Test
     public void bin2png16b() throws IOException {
         org.bytedeco.javacpp.Loader.load(org.bytedeco.javacpp.opencv_java.class);
@@ -110,8 +120,8 @@ public class ImageUtilsTest {
     //TODO https://stackoverflow.com/questions/59715460/how-to-visualize-a-16-bit-grayscale-image-with-cv2-imshow
 
     @Test
-    public void png16AndRgbToPly() {
-        List<PlyProp> props = PlyUtils.getPlyFromPng16(DEPTH16PNG_2);
+    public void png16ToPly() {
+        List<PlyProp> props = PlyUtils.getPlyFromPng16("E:\\dataset\\20210113_182200.dataset\\00000040.png");
         PlyUtils.writePly(props, DIR + "/tmp_00003795_depth16.bin.png.ply", false);
     }
 
