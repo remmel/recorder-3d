@@ -7,9 +7,9 @@ I added 2 features :
 
 ## Recorder
 
-<img src="HwAREngineDemo/src/test/resources/00000012_image.jpg" width="240" /> ![](HwAREngineDemo/src/test/resources/00000012_depth.png) <img src="doc/plymeshlab.png" width="240" />
+<img src="Recorder3D/src/test/resources/00000012_image.jpg" width="240" /> ![](Recorder3D/src/test/resources/00000012_depth.png) <img src="doc/plymeshlab.png" width="240" />
 
-Every seconds save the rgb and depth image, and its pose in the /storage/emulated/0/Android/data/com.huawei.arenginesdk.demo/files/
+Every seconds save the rgb and depth image, and its pose in the /storage/emulated/0/Android/data/com.remmel.recorder3d/files/
 
 Features :
 - Save depth (240x180 - fancy png, binary depth16)

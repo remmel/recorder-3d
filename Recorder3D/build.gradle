@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.huawei.arenginesdk.demo"
+        applicationId "com.remmel.recorder3d"
         minSdkVersion 26
         targetSdkVersion 27
         versionCode 2

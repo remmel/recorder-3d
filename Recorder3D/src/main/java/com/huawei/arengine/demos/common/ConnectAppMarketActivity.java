@@ -24,8 +24,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.huawei.arengine.demos.R;
 import com.huawei.hiar.exceptions.ARFatalException;
+import com.remmel.recorder3d.R;
 
 /**
  * This activity is used to redirect the user to AppGallery and install the AR Engine server.

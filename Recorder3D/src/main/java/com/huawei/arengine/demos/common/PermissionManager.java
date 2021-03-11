@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.huawei.arengine.demos.ChooseActivity;
+import com.remmel.recorder3d.ChooseActivity;
 
 import java.util.ArrayList;
 import java.util.List;
