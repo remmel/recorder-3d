@@ -1,39 +1,26 @@
-/**
- * Copyright 2020. Huawei Technologies Co., Ltd. All rights reserved.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-
 package com.remmel.recorder3d;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.remmel.recorder3d.R;
 import com.huawei.arengine.demos.common.PermissionManager;
 import com.remmel.recorder3d.measure.MeasureActivity;
 import com.remmel.recorder3d.recorder.RecorderActivity;
+import com.remmel.recorder3d.recorder.RecorderRenderManager;
 import com.remmel.recorder3d.recorder.preferences.RecorderPreferenceActivity;
+
+import java.io.File;
 
 /**
  * This class provides the permission verification and sub-AR example redirection functions.
@@ -44,9 +31,6 @@ import com.remmel.recorder3d.recorder.preferences.RecorderPreferenceActivity;
 public class ChooseActivity extends Activity {
     private static final String TAG = ChooseActivity.class.getSimpleName();
 
-    private boolean isFirstClick = true;
-    TextView textView;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,15 +40,21 @@ public class ChooseActivity extends Activity {
         // AR Engine requires the camera permission.
         PermissionManager.checkPermission(this);
 
-        textView = findViewById(R.id.txt_choose);
-        textView.setText(BuildConfig.APPLICATION_ID + "/" + BuildConfig.VERSION_NAME);
+        TextView tvHeader = findViewById(R.id.choose_txt_header);
+        tvHeader.setText(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME);
+
+        File dir = this.getExternalFilesDir(null);
+        TextView tvFolder = findViewById(R.id.choose_txt_filesfolder);
+        tvFolder.setText(dir + ":");
+
+        renderBrowser();
+
     }
 
     @Override
     protected void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-        isFirstClick = true;
     }
 
     @Override
@@ -88,11 +78,6 @@ public class ChooseActivity extends Activity {
      * @param view View
      */
     public void onClick(View view) {
-        if (!isFirstClick) {
-            return;
-        } else {
-            isFirstClick = false;
-        }
         switch (view.getId()) {
             case R.id.btn_measure:
                 startActivity(new Intent(this, MeasureActivity.class));
@@ -103,8 +88,38 @@ public class ChooseActivity extends Activity {
             case R.id.btn_recorder_settings:
                 startActivity(new Intent(this, RecorderPreferenceActivity.class));
                 break;
+
+            case R.id.btn_fileexplorer:
+                File dir = this.getExternalFilesDir(null);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.parse(dir.getAbsolutePath());
+                intent.setDataAndType(uri, "*/*");
+                startActivity(Intent.createChooser(intent, "Open folder"));
+
+                break;
             default:
                 Log.e(TAG, "onClick error!");
         }
     }
+
+    protected void renderBrowser() {
+        File filesDir = this.getExternalFilesDir(null);
+        LinearLayout ll = findViewById(R.id.choose_linearlayout);
+        String[] directories = filesDir.list(FilenameFilterUtils.isDir());
+
+        for (String dir : directories) {
+            TextView tv = new TextView(this);
+
+
+            File f = new File(filesDir, dir);
+            int nbRgbVga = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_IMAGEVGAJPG)).length;
+            int nbRgb = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_IMAGEJPG)).length;
+            int nbDepth = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_DEPTH16BIN)).length;
+
+            tv.setText("• " + dir+ " RGBVGA("+nbRgbVga+") RGB("+nbRgb+") Depth("+nbDepth+")");
+            ll.addView(tv);
+        }
+    }
+
+
 }

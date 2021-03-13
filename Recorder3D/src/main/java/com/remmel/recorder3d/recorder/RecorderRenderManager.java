@@ -49,6 +49,9 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     private static final float MATRIX_SCALE_SX = -1.0f;
 
     private static final float MATRIX_SCALE_SY = -1.0f;
+    public static final String FN_SUFFIX_DEPTH16BIN = "_depth16.bin";
+    public static final String FN_SUFFIX_IMAGEVGAJPG = "_image_vga.jpg";
+    public static final String FN_SUFFIX_IMAGEJPG = "_image.jpg";
 
     private TextureDisplay mTextureDisplay = new TextureDisplay();
 
@@ -205,13 +208,13 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             numFrameSaved++;
 
             if (takePhoto || videoDepth)
-                ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + "_depth16.bin")); // 0.001s
+                ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + FN_SUFFIX_DEPTH16BIN)); // 0.001s
 
             if (takePhoto || videoRgbVga)
-                ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr + "_image_vga.jpg"));
+                ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEVGAJPG));
 
             if (takePhoto || videoRgbPreview)
-                ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr + "_image.jpg"));
+                ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEJPG));
 
 
             //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
