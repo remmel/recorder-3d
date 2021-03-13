@@ -20,7 +20,10 @@ import com.remmel.recorder3d.recorder.RecorderActivity;
 import com.remmel.recorder3d.recorder.RecorderRenderManager;
 import com.remmel.recorder3d.recorder.preferences.RecorderPreferenceActivity;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * This class provides the permission verification and sub-AR example redirection functions.
@@ -30,6 +33,7 @@ import java.io.File;
  */
 public class ChooseActivity extends Activity {
     private static final String TAG = ChooseActivity.class.getSimpleName();
+    protected LinearLayout llFileManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,16 +47,12 @@ public class ChooseActivity extends Activity {
         TextView tvHeader = findViewById(R.id.choose_txt_header);
         tvHeader.setText(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME);
 
-        File dir = this.getExternalFilesDir(null);
-        TextView tvFolder = findViewById(R.id.choose_txt_filesfolder);
-        tvFolder.setText(dir + ":");
-
-        renderBrowser();
-
+        llFileManager = findViewById(R.id.choose_linearlayout);
     }
 
     @Override
     protected void onResume() {
+        renderDirtyFileManager();
         Log.d(TAG, "onResume");
         super.onResume();
     }
@@ -102,14 +102,21 @@ public class ChooseActivity extends Activity {
         }
     }
 
-    protected void renderBrowser() {
+    protected void renderDirtyFileManager() {
         File filesDir = this.getExternalFilesDir(null);
-        LinearLayout ll = findViewById(R.id.choose_linearlayout);
+        llFileManager.removeAllViewsInLayout();
+
+        TextView tvFolder = new TextView(this);
+        tvFolder.setText(filesDir + ":");
+        tvFolder.setTextSize(10);
+        llFileManager.addView(tvFolder);
+
         String[] directories = filesDir.list(FilenameFilterUtils.isDir());
+        Arrays.sort(directories);
+        ArrayUtils.reverse(directories);
 
         for (String dir : directories) {
             TextView tv = new TextView(this);
-
 
             File f = new File(filesDir, dir);
             int nbRgbVga = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_IMAGEVGAJPG)).length;
@@ -117,9 +124,7 @@ public class ChooseActivity extends Activity {
             int nbDepth = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_DEPTH16BIN)).length;
 
             tv.setText("• " + dir+ " RGBVGA("+nbRgbVga+") RGB("+nbRgb+") Depth("+nbDepth+")");
-            ll.addView(tv);
+            llFileManager.addView(tv);
         }
     }
-
-
 }

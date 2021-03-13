@@ -42,6 +42,8 @@ dependencies {
     implementation 'com.huawei.hms:arenginesdk:2.15.0.1'
     testImplementation 'junit:junit:4.12'
 
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
 //    implementation 'org.openpnp:opencv:4.3.0-3' //nu.pattern.OpenCV.loadLocally(); - not android
 
     implementation "org.bytedeco:javacpp:1.5.4" // Loader.load(org.bytedeco.javacpp.opencv_java.class); //https://github.com/bytedeco/javacpp
