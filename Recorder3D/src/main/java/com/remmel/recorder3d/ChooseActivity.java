@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.huawei.arengine.demos.common.PermissionManager;
+import com.remmel.recorder3d.dataset.DatasetActivity;
+import com.remmel.recorder3d.dataset.DatasetWebviewActivity;
 import com.remmel.recorder3d.measure.MeasureActivity;
 import com.remmel.recorder3d.recorder.RecorderActivity;
 import com.remmel.recorder3d.recorder.RecorderRenderManager;
@@ -116,15 +119,29 @@ public class ChooseActivity extends Activity {
         ArrayUtils.reverse(directories);
 
         for (String dir : directories) {
-            TextView tv = new TextView(this);
+            Button bt = new Button(this);
 
             File f = new File(filesDir, dir);
             int nbRgbVga = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_IMAGEVGAJPG)).length;
             int nbRgb = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_IMAGEJPG)).length;
             int nbDepth = f.list(FilenameFilterUtils.endsWith(RecorderRenderManager.FN_SUFFIX_DEPTH16BIN)).length;
 
-            tv.setText("• " + dir+ " RGBVGA("+nbRgbVga+") RGB("+nbRgb+") Depth("+nbDepth+")");
-            llFileManager.addView(tv);
+            bt.setText(dir+ " RGBVGA("+nbRgbVga+") RGB("+nbRgb+") Depth("+nbDepth+")");
+            bt.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+
+            ChooseActivity self = this; //hum... alternative?
+            bt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(self, DatasetActivity.class);
+                    Bundle b = new Bundle();
+                    b.putString(DatasetWebviewActivity.BUNDLE_KEY_DATASET, dir); //Your id
+                    intent.putExtras(b);
+                    startActivity(intent);
+                }
+            });
+
+            llFileManager.addView(bt);
         }
     }
 }

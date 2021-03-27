@@ -327,7 +327,7 @@ public class ImageUtils {
                 short depthSample = sBuffer.get(); //depth16[y*width + x];
                 short depthMm = (short) (depthSample & 0x1FFF);
 //                short depthConfidence = (short) ((depthSample >> 13) & 0x7);
-                depthTum[h*width+w] = (short)(depthMm * 5); //tum rgbd is 5==1mm / 5000==1mm
+                depthTum[h*width+w] = (short)(depthMm * 5); //tum rgbd is 5==1mm / 5000==1m
             }
         }
 

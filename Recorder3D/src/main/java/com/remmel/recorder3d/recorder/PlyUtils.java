@@ -206,24 +206,4 @@ public class PlyUtils {
         }
         return depth;
     }
-
-    public static void bulkWritePly(File dir) throws IOException { //apply poses
-        List<CsvPose> poses = CsvPose.fromCsvRows(Files.readAllLines(Paths.get(dir + "/poses.csv")));
-        Arrays.stream(dir.list())
-                .filter(s -> s.endsWith("_depth16.bin"))
-                .sorted()
-                .forEach(fn -> {
-                            String numFrame = fn.substring(0, 8);
-                            String depth16 = dir + "/" + fn;
-                            String jpg = dir + "/" + numFrame + "_image_vga.jpg";
-                            String ply = dir + "/" + numFrame + ".ply";
-                            try {
-                                PlyUtils.writePly(depth16, jpg, ply, false);
-                                Log.d(TAG, "convert to ply "+numFrame+" in "+dir);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                );
-    }
 }

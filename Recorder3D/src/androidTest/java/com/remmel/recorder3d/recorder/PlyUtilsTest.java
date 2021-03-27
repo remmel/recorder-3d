@@ -57,14 +57,4 @@ public class PlyUtilsTest {
         PlyUtils.merge(DIR_DATASET + "/poses_agisoft.csv", DIR_DATASET+"/ply/tmp_frames_agisoft.ply", false);
         Log.d(TAG, "bin: "+t.getElapsedSeconds());
     }
-
-    @Test
-    public void bulkWritePly() throws IOException {
-        PlyUtils.bulkWritePly(new File("/storage/emulated/0/Android/data/com.remmel.recorder3d/files/2021-02-15_025939"));
-    }
-
-    @Test
-    public void cropRgbdVideo(){
-
-    }
 }
