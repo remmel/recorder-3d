@@ -25,5 +25,9 @@
     <string name="pref_rbgPreview_resolution_default_value">1440x1080</string>
     <string name="pref_autofocus">pref_autofocus</string>
     <string name="pref_repeat_default_value">30</string>
+    <!-- dev prefs -->
+    <string name="pref_webviewUrlCustomized_key">pref_webviewUrlCustomized</string>
+    <string name="pref_webviewUrl_key">pref_webviewurl3</string>
+    <string name="pref_webviewUrl_value">https://remy-mellet.com/image-processing-js</string>
 
 </resources>

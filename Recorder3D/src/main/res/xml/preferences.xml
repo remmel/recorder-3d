@@ -58,4 +58,16 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="DEBUG - Developer mode">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="@string/pref_webviewUrlCustomized_key"
+            app:title="Change default webviewUrl" />
+        <EditTextPreference
+            app:defaultValue="@string/pref_webviewUrl_value"
+            app:key="@string/pref_webviewUrl_key"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="@string/pref_webviewUrlCustomized_key"/>
+    </PreferenceCategory>
+
 </PreferenceScreen>

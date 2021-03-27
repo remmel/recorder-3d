@@ -69,11 +69,11 @@ public class DatasetActivity extends Activity {
         }
     }
 
-    protected void startActivityWebViewer(int type){
+    protected void startActivityWebViewer(int type) {
         Intent intent = new Intent(this, DatasetWebviewActivity.class);
         Bundle b = new Bundle();
-        b.putString("dataset", datasetFolder.getName()); //Your id
-        b.putInt("type", type);
+        b.putString(DatasetWebviewActivity.BUNDLE_KEY_DATASET, datasetFolder.getName()); //Your id
+        b.putInt(DatasetWebviewActivity.BUNDLE_KEY_TYPE, type);
         intent.putExtras(b);
         startActivity(intent);
     }

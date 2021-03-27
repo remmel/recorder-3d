@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.webkit.internal.AssetHelper;
 
 import com.remmel.recorder3d.R;
+import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,8 +63,8 @@ public class DatasetWebviewActivity extends Activity {
         //WebViewAssetLoader seems to be only for assets files, in different directory
         wv.setWebViewClient(getWebViewClient(this.getExternalFilesDir(null)));
 
-//        String domain = "https://192.168.0.226:9000";
-        String domain = "https://remy-mellet.com/image-processing-js";
+        AppSharedPreference pref = new AppSharedPreference(this);
+        String domain = pref.getWebviewUrl();
 
         String webappPage;
         switch (type) {

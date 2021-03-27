@@ -9,6 +9,7 @@ import androidx.annotation.StringRes;
 
 import com.remmel.recorder3d.R;
 import com.huawei.hiar.ARConfigBase;
+import com.remmel.recorder3d.dataset.DatasetWebviewActivity;
 
 public class AppSharedPreference {
     SharedPreferences sharedPrefs;
@@ -65,5 +66,16 @@ public class AppSharedPreference {
 
     protected int getPrefInteger(@StringRes int resId, String defaultValue) {
         return Integer.parseInt(sharedPrefs.getString(getString(resId), defaultValue));
+    }
+
+    /**
+     * Returns the used webview url
+     * This is a preference, because as a developer it easier me the life to be able to use the localhost webapp
+     */
+    public String getWebviewUrl() {
+        boolean isCustomized = sharedPrefs.getBoolean(getString(R.string.pref_webviewUrlCustomized_key), false);
+        String defaultUrl = getString(R.string.pref_webviewUrl_value);
+        if(isCustomized) return sharedPrefs.getString(getString(R.string.pref_webviewUrl_key), defaultUrl);
+        else return defaultUrl;
     }
 }

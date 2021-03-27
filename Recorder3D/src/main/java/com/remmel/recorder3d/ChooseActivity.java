@@ -19,14 +19,19 @@ import com.huawei.arengine.demos.common.PermissionManager;
 import com.remmel.recorder3d.dataset.DatasetActivity;
 import com.remmel.recorder3d.dataset.DatasetWebviewActivity;
 import com.remmel.recorder3d.measure.MeasureActivity;
+import com.remmel.recorder3d.recorder.IoUtils;
 import com.remmel.recorder3d.recorder.RecorderActivity;
 import com.remmel.recorder3d.recorder.RecorderRenderManager;
 import com.remmel.recorder3d.recorder.preferences.RecorderPreferenceActivity;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Scanner;
 
 /**
  * This class provides the permission verification and sub-AR example redirection functions.
@@ -142,6 +147,19 @@ public class ChooseActivity extends Activity {
             });
 
             llFileManager.addView(bt);
+        }
+    }
+
+    protected static String getLastestVersion() {
+        //https://api.github.com/repos/remmel/recorder-3d/releases/latest
+        //https://raw.githubusercontent.com/remmel/recorder-3d/master/build.gradle
+        String lastestUrl = "https://api.github.com/repos/remmel/recorder-3d/releases/latest";
+        try {
+            String out = new Scanner(new URL(lastestUrl).openStream(), "UTF-8").useDelimiter("\\A").next();
+            String ver = StringUtils.substringBetween(out, "tag_name\":\"v", "\",");
+            return ver;
+        } catch (IOException e) {
+           return null;
         }
     }
 }
