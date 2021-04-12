@@ -9,7 +9,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,10 +73,11 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     TextView poseTextView;
 
-    Button btnPhoto;
+    ImageButton btnTrigger;
     boolean takePhoto = false;
+    boolean takeVideo = false;
     MediaPlayer _shootMP;
-    Switch btnVideo;
+    Switch btnMode;
 
     AppSharedPreference pref;
 
@@ -91,23 +93,31 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 //        fPose = new File(dir, "poses.csv");
         poseTextView = activity.findViewById(R.id.recorderPoseTextView);
 
-        btnPhoto = activity.findViewById(R.id.btn_recorder_photo);
-        btnPhoto.setOnClickListener(new View.OnClickListener() {
+        btnTrigger = activity.findViewById(R.id.btn_recorder_trigger);
+        btnTrigger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhoto();
+               onClickTrigger();
             }
         });
 
-        btnVideo = activity.findViewById(R.id.btn_recorder_switch);
+        btnMode = activity.findViewById(R.id.btn_recorder_switch_mode);
+        btnMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!isVideoMode()) takeVideo = false; //stop the video capture if the user directly switch to photo mode
+                renderTriggerButtonIcon();
+            }
+        });
 
         AppSharedPreference pref = new AppSharedPreference(context);
+
+        renderTriggerButtonIcon();
     }
 
-    protected void takePhoto() {
-        takePhoto = true;
-        shootSound();
-    }
+//    protected void takePhoto() {
+//        takePhoto = true;
+//        shootSound();
+//    }
 
     protected void initDir() {
         if(dir == null) {
@@ -197,9 +207,9 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         if (arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return; //pose not ready yet
 
-        boolean videoDepth = btnVideo.isChecked() && pref.isDepthEnabled() && numFrame % pref.getDepthRepeat() == 0;
-        boolean videoRgbVga = btnVideo.isChecked() && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
-        boolean videoRgbPreview = btnVideo.isChecked() && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
+        boolean videoDepth = takeVideo && pref.isDepthEnabled() && numFrame % pref.getDepthRepeat() == 0;
+        boolean videoRgbVga = takeVideo && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
+        boolean videoRgbPreview = takeVideo && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
 
         if (takePhoto || videoDepth || videoRgbVga || videoRgbPreview) {
 
@@ -223,7 +233,10 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
             //        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
 
-            takePhoto = false;
+            if(takePhoto) {
+                takePhoto = false;
+                renderTriggerButtonIcon(); //put back normal icon as photo is taken
+            }
         }
 
 
@@ -286,5 +299,30 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             if (_shootMP != null)
                 _shootMP.start();
         }
+    }
+
+    protected void onClickTrigger() {
+        if(isVideoMode()) {
+            takeVideo = !takeVideo;
+            //TODO add "video" sound
+        } else {
+            takePhoto = true;
+            shootSound();
+        }
+        renderTriggerButtonIcon();
+    }
+
+    protected void renderTriggerButtonIcon() {
+        if(isVideoMode()) {
+            if(takeVideo) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
+            else btnTrigger.setImageResource(R.drawable.ic_btn_camera_video);
+        } else {
+            if(takePhoto) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
+            else  btnTrigger.setImageResource(R.drawable.ic_btn_camera_photo);
+        }
+    }
+
+    protected boolean isVideoMode() {
+        return btnMode.isChecked();
     }
 }

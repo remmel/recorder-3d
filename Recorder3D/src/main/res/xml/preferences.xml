@@ -18,7 +18,7 @@
             app:entries="@array/repeat_entries"
             app:entryValues="@array/repeat_values"
             app:key="@string/pref_depth_repeat"
-            app:title="Repeat mode interval"
+            app:title="Video / Repeat mode interval"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
@@ -33,7 +33,7 @@
             app:entries="@array/repeat_entries"
             app:entryValues="@array/repeat_values"
             app:key="@string/pref_rgbvga_repeat"
-            app:title="Repeat mode interval"
+            app:title="Video / Repeat mode interval"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
@@ -54,7 +54,7 @@
             app:entries="@array/repeat_entries"
             app:entryValues="@array/repeat_values"
             app:key="@string/pref_rgbPreview_repeat"
-            app:title="Repeat mode interval"
+            app:title="Video / Repeat mode interval"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 

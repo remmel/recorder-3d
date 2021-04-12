@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933334"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="ic_btn_camera_multi.svg"
+   inkscape:export-filename="C:\Users\remme\workspace\GitHub\recorder-3d\Recorder3D\src\main\res\drawable/camera_photo.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2">
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter838"
+       x="-1.2e-06"
+       width="1.0000024"
+       y="-1.2e-06"
+       height="1.0000024">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="3.175e-06"
+         id="feGaussianBlur840" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="48.964157"
+     inkscape:cy="48.407944"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:pagecheckerboard="true"
+     inkscape:window-width="1600"
+     inkscape:window-height="837"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Edit background"
+     style="display:none">
+    <rect
+       style="display:inline;fill:#00ff00;stroke:#00ff00;stroke-width:0.540607"
+       id="rect1919"
+       width="48.399555"
+       height="65.119034"
+       x="-6.38415"
+       y="-16.92425"
+       ry="0" />
+  </g>
+  <g
+     inkscape:label="General"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:inline">
+    <circle
+       style="fill:none;stroke:#ffffff;stroke-width:0.648433;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path1917"
+       cx="8.4666672"
+       cy="8.4666672"
+       r="8.1424503" />
+    <circle
+       style="fill:#ffffff;stroke:none;stroke-width:0.449502;stroke-miterlimit:4;stroke-dasharray:none"
+       id="circle2755"
+       cx="8.4666672"
+       cy="8.4666672"
+       r="5.6444445" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Video"
+     style="display:none">
+    <circle
+       style="display:inline;fill:#ff0000;stroke:none;stroke-width:0.252845;stroke-miterlimit:4;stroke-dasharray:none"
+       id="circle2757"
+       cx="8.4666662"
+       cy="8.4666662"
+       r="3.175" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Video Recording"
+     style="display:inline;filter:url(#filter838)">
+    <rect
+       style="display:inline;fill:#ff0000;stroke:none;stroke-width:0.602915;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect2788"
+       width="6.3499999"
+       height="6.3499999"
+       x="5.2916665"
+       y="5.2916665"
+       rx="0.46463412"
+       ry="0.5658415" />
+  </g>
+</svg>

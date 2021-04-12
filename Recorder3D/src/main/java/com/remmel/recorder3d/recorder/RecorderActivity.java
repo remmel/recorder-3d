@@ -40,7 +40,7 @@ public class RecorderActivity extends Activity {
 
     private boolean isRemindInstall = false;
 
-    Button btnStop;
+    Button btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +63,9 @@ public class RecorderActivity extends Activity {
         mSurfaceView.setRenderer(mRecorderRenderManager);
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-        btnStop = findViewById(R.id.btn_recorder_stop);
+        btnBack = findViewById(R.id.btn_recorder_back);
 
-        btnStop.setOnClickListener(new View.OnClickListener() {
+        btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -123,7 +123,7 @@ public class RecorderActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Take a photo when pressing the volume up or headset cable button
         if(keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_VOLUME_UP){
-            mRecorderRenderManager.takePhoto();
+            mRecorderRenderManager.onClickTrigger();
             return true;
         }
         return super.onKeyDown(keyCode, event);
