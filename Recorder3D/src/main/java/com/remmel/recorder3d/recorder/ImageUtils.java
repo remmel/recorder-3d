@@ -38,6 +38,7 @@ public class ImageUtils {
     private static final String TAG = ImageUtils.class.getSimpleName();
 
     private static byte[] YUV_420_888toNV21(Image image) {
+        assert(image.getFormat() == ImageFormat.YUV_420_888);
         byte[] nv21;
         ByteBuffer yBuffer = image.getPlanes()[0].getBuffer();
         ByteBuffer uBuffer = image.getPlanes()[1].getBuffer();
@@ -114,6 +115,7 @@ public class ImageUtils {
 
         int w = image.getWidth();
         int h = image.getHeight();
+
 
         short[][] depth = depth16ToDepthRangeArray(buffer, w, h);
         Bitmap bitmap = depthArrayToFancyRgbHueBitmap(depth, w, h);

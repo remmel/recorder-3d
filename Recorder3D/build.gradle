@@ -53,6 +53,11 @@ dependencies {
     implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:android-arm64"
     implementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:android-x86"
 
+    implementation 'org.jcodec:jcodec:0.2.5' //create mp4
+    implementation 'org.jcodec:jcodec-android:0.2.5'
+
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+
     testImplementation "org.bytedeco.javacpp-presets:opencv:4.0.1-1.4.4:windows-x86_64"
     testImplementation "org.bytedeco:javacv-platform:1.5.4" ////Loader.load(org.bytedeco.opencv.opencv_java.class);
 

@@ -9,6 +9,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
@@ -25,6 +26,9 @@ import com.huawei.hiar.ARCameraIntrinsics;
 import com.huawei.hiar.ARFrame;
 import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
+import com.remmel.recorder3d.recorder.video.RecordAudio;
+import com.remmel.recorder3d.recorder.video.RecordVideo2;
+import com.remmel.recorder3d.recorder.video.RecordVideoAbstract;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +58,10 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     public static final String FN_SUFFIX_IMAGEVGAJPG = "_image_vga.jpg";
     public static final String FN_SUFFIX_IMAGEJPG = "_image.jpg";
 
+
+    private final RecordVideoAbstract recordVideoAbstract;
+    private RecordAudio recordAudioHandler = new RecordAudio();
+
     private TextureDisplay mTextureDisplay = new TextureDisplay();
 
     private ARSession mSession;
@@ -78,6 +86,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     boolean takeVideo = false;
     MediaPlayer _shootMP;
     Switch btnMode;
+    Button btnTest; //btn to test new features
 
     AppSharedPreference pref;
 
@@ -105,6 +114,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         btnMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(!isVideoMode()) takeVideo = false; //stop the video capture if the user directly switch to photo mode
+                if(isVideoMode()) RecordAudio.requestAudioPermission(activity); //we are in video mode, ask the permission for later
                 renderTriggerButtonIcon();
             }
         });
@@ -112,6 +122,16 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         AppSharedPreference pref = new AppSharedPreference(context);
 
         renderTriggerButtonIcon();
+
+        btnTest = activity.findViewById(R.id.btn_recorder_test);
+//        recordVideoAbstract = new RecordVideoJcodec(mActivity);
+        recordVideoAbstract = new RecordVideo2(mActivity, pref.getRgbPreviewResolution());
+        btnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recordVideoAbstract.toggle();
+            }
+        });
     }
 
 //    protected void takePhoto() {
@@ -211,11 +231,17 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         boolean videoRgbVga = takeVideo && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
         boolean videoRgbPreview = takeVideo && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
 
+
+        recordVideoAbstract.update(arFrame);
+
         if (takePhoto || videoDepth || videoRgbVga || videoRgbPreview) {
 
             initDir(); //the 1st time or getDir() maybe nicer
             csvPoses.add(csvPose);
             numFrameSaved++;
+
+//            if(takeVideo && !recordAudioHandler.isRecoding)
+//                recordAudioHandler.startRecording(dir);
 
             if (takePhoto || videoDepth)
                 ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + FN_SUFFIX_DEPTH16BIN)); // 0.001s
@@ -274,6 +300,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     public void onPause() {
         writePoses();
+        recordAudioHandler.onStop();
     }
 
     protected void writePoses() {
