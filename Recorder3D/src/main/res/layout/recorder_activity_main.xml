@@ -45,23 +45,28 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="20dp"
+                android:showDividers="middle"
+                android:divider="@drawable/empty_tall_divider"
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/btn_recorder_mode_photo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Photo 📷 " />
 
-                <Switch
-                    android:id="@+id/btn_recorder_switch_mode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <TextView
+                    android:id="@+id/btn_recorder_mode_repeat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text= " 🎥 Video" />
+                    android:text="Repeat 🔁" />
+
+                <TextView
+                    android:id="@+id/btn_recorder_mode_video"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Video 📹" />
             </LinearLayout>
 
             <ImageButton
@@ -80,16 +85,6 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:text="Back"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btn_recorder_test"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
-            android:layout_marginEnd="16dp"
-            android:text="Test"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

@@ -6,6 +6,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaRecorder;
 import android.util.Log;
 
 import java.io.File;
@@ -20,11 +21,20 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 // Thanks SO : https://stackoverflow.com/a/51278232/352173
+
+/**
+ * Copy paste from SO :
+ * In my case stupid convertion has been done: YUV4208888(byte[]; YYUV) => Bitmap => YUV420SP (byte[]; YYYYUV).
+ * I should try to use MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar or a another codec
+ */
 public class BitmapToVideoEncoder {
     private static final String TAG = BitmapToVideoEncoder.class.getSimpleName();
 
-    private File mOutputFile;
-    private Queue<Bitmap> mEncodeQueue = new ConcurrentLinkedQueue();
+    private File mOutputVideoFile;
+    private File mOutputAudioFile;
+    private File mOutputMixFile;
+
+    private Queue<QueueFrame> mEncodeQueue = new ConcurrentLinkedQueue();
     private MediaCodec mediaCodec;
     private MediaMuxer mediaMuxer;
 
@@ -44,6 +54,9 @@ public class BitmapToVideoEncoder {
     private boolean mNoMoreFrames = false;
     private boolean mAbort = false;
 
+    // audio
+    MediaRecorder audioRecorder;
+
     public interface IBitmapToVideoEncoderCallback {
         void onEncodingComplete(File outputFile);
     }
@@ -56,14 +69,36 @@ public class BitmapToVideoEncoder {
         return mEncodeQueue.size();
     }
 
+    protected void startAudio(File faudio) {
+        audioRecorder = new MediaRecorder();
+//        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        audioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        audioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        audioRecorder.setOutputFile(faudio);
+        audioRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        try {
+            audioRecorder.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        audioRecorder.start();
+    }
+
     public void startEncoding(int width, int height, File outputFile) {
+
         mWidth = width;
         mHeight = height;
-        mOutputFile = outputFile;
+
+        mOutputMixFile = outputFile;
+        mOutputVideoFile = new File(outputFile.getAbsolutePath()+".image.mp4");
+        mOutputAudioFile = new File(outputFile.getAbsolutePath()+".audio.3gp");
+
+        startAudio(mOutputAudioFile);
 
         String outputFileString;
         try {
-            outputFileString = outputFile.getCanonicalPath();
+            outputFileString = mOutputVideoFile.getCanonicalPath();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get path for " + outputFile);
             return;
@@ -94,6 +129,7 @@ public class BitmapToVideoEncoder {
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL);
+
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
         try {
@@ -125,6 +161,8 @@ public class BitmapToVideoEncoder {
                 mNewFrameLatch.countDown();
             }
         }
+
+        audioRecorder.release();
     }
 
     public void abortEncoding() {
@@ -145,14 +183,14 @@ public class BitmapToVideoEncoder {
         }
     }
 
-    public void queueFrame(Bitmap bitmap) {
+    public void queueFrame(QueueFrame queueFrame) {
         if (mediaCodec == null || mediaMuxer == null) {
             Log.d(TAG, "Failed to queue frame. Encoding not started");
             return;
         }
 
         Log.d(TAG, "Queueing frame");
-        mEncodeQueue.add(bitmap);
+        mEncodeQueue.add(queueFrame);
 
         synchronized (mFrameSync) {
             if ((mNewFrameLatch != null) && (mNewFrameLatch.getCount() > 0)) {
@@ -168,8 +206,8 @@ public class BitmapToVideoEncoder {
         while(true) {
             if (mNoMoreFrames && (mEncodeQueue.size() ==  0)) break;
 
-            Bitmap bitmap = mEncodeQueue.poll();
-            if (bitmap ==  null) {
+            QueueFrame queueFrame = mEncodeQueue.poll();
+            if (queueFrame ==  null) {
                 synchronized (mFrameSync) {
                     mNewFrameLatch = new CountDownLatch(1);
                 }
@@ -178,16 +216,19 @@ public class BitmapToVideoEncoder {
                     mNewFrameLatch.await();
                 } catch (InterruptedException e) {}
 
-                bitmap = mEncodeQueue.poll();
+                queueFrame = mEncodeQueue.poll();
             }
 
-            if (bitmap == null) continue;
+            if (queueFrame == null) continue;
 
+            Bitmap bitmap = queueFrame.bitmap;
             byte[] byteConvertFrame = getNV21(bitmap.getWidth(), bitmap.getHeight(), bitmap);
 
             long TIMEOUT_USEC = 500000;
             int inputBufIndex = mediaCodec.dequeueInputBuffer(TIMEOUT_USEC);
-            long ptsUsec = computePresentationTime(mGenerateIndex, FRAME_RATE);
+//            long ptsUsec = computePresentationTime(mGenerateIndex, FRAME_RATE);
+            long ptsUsec = queueFrame.time_ms * 1000;
+            Log.d(TAG, "ptsUsec="+ptsUsec);
             if (inputBufIndex >= 0) {
                 final ByteBuffer inputBuffer = mediaCodec.getInputBuffer(inputBufIndex);
                 inputBuffer.clear();
@@ -204,6 +245,7 @@ public class BitmapToVideoEncoder {
                 // not expected for an encoder
                 MediaFormat newFormat = mediaCodec.getOutputFormat();
                 mTrackIndex = mediaMuxer.addTrack(newFormat);
+//                mediaMuxer.addTrack(createAudioMediaFormat()); //RM?
                 mediaMuxer.start();
             } else if (encoderStatus < 0) {
                 Log.e(TAG, "unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
@@ -222,8 +264,12 @@ public class BitmapToVideoEncoder {
 
         release();
 
+
+
+        VideoUtils.mux(mOutputVideoFile, mOutputAudioFile, mOutputMixFile);
+
         if (mAbort) {
-            mOutputFile.delete();
+            mOutputVideoFile.delete();
         }
     }
 
@@ -332,9 +378,5 @@ public class BitmapToVideoEncoder {
                 index++;
             }
         }
-    }
-
-    private long computePresentationTime(long frameIndex, int framerate) {
-        return 132 + frameIndex * 1000000 / framerate;
     }
 }

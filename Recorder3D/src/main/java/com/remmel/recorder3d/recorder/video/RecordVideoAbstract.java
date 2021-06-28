@@ -11,13 +11,14 @@ import androidx.core.app.ActivityCompat;
 
 import com.huawei.hiar.ARFrame;
 
+import java.io.File;
+
 /***
  * As copying on memory is quicker (1.74 GB : 15s ~  115MB/s ~ 4MB/frame at 30fps) than encoding with the lib I found, I'll create the video later)
  */
 abstract public class RecordVideoAbstract {
     private static final String TAG = RecordVideoAbstract.class.getSimpleName();
     protected Activity activity;
-    private boolean mRecording = false;
     protected Size size;
     static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
@@ -28,34 +29,32 @@ abstract public class RecordVideoAbstract {
         this.size = size;
     }
 
-    public void toggle() {
+    public boolean requestPermission() {
         if (ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+            return false;
         } else {
-            if(mRecording) stop();
-            else start();
+            return true;
         }
     }
 
-    protected void start() {
-        mRecording = true;
-        _start();
+    public void start(File dir) { //or should return a boolean sucess?
+        _start(dir);
         Toast.makeText(this.activity, "Start", Toast.LENGTH_SHORT).show();
     }
 
-    protected abstract void _start();
+    protected abstract void _start(File dir);
 
-    protected void stop() {
-        mRecording = false;
+    public void stop() {
         _stop();
         Toast.makeText(this.activity, "Stopped", Toast.LENGTH_SHORT).show();
     }
 
     protected abstract void _stop();
 
-    public void update(ARFrame image) {
-        if(mRecording) _update(image.acquirePreviewImage());
+    public void update(ARFrame image, long currentSessionMillis) {
+        _update(image.acquirePreviewImage(), currentSessionMillis);
     }
 
-    protected abstract void _update(Image image);
+    protected abstract void _update(Image image, long currentSessionMillis);
 }

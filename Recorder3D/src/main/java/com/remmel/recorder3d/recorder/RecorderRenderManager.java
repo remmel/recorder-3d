@@ -2,6 +2,7 @@ package com.remmel.recorder3d.recorder;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Paint;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -10,25 +11,22 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.remmel.recorder3d.R;
 import com.huawei.arengine.demos.common.ArDemoRuntimeException;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
 import com.huawei.arengine.demos.common.TextureDisplay;
-import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
 import com.huawei.hiar.ARCamera;
 import com.huawei.hiar.ARCameraIntrinsics;
 import com.huawei.hiar.ARFrame;
 import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
-import com.remmel.recorder3d.recorder.video.RecordAudio;
-import com.remmel.recorder3d.recorder.video.RecordVideo2;
+import com.remmel.recorder3d.R;
+import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
 import com.remmel.recorder3d.recorder.video.RecordVideoAbstract;
+import com.remmel.recorder3d.recorder.video.RecordVideoImp;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,22 +43,12 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     private static final String TAG = RecorderRenderManager.class.getSimpleName();
 
-    private static final int PROJ_MATRIX_OFFSET = 0;
-
-    private static final float PROJ_MATRIX_NEAR = 0.1f;
-
-    private static final float PROJ_MATRIX_FAR = 100.0f;
-
-    private static final float MATRIX_SCALE_SX = -1.0f;
-
-    private static final float MATRIX_SCALE_SY = -1.0f;
     public static final String FN_SUFFIX_DEPTH16BIN = "_depth16.bin";
     public static final String FN_SUFFIX_IMAGEVGAJPG = "_image_vga.jpg";
     public static final String FN_SUFFIX_IMAGEJPG = "_image.jpg";
-
+    public static final String FN_VIDEO = "video.mp4";
 
     private final RecordVideoAbstract recordVideoAbstract;
-    private RecordAudio recordAudioHandler = new RecordAudio();
 
     private TextureDisplay mTextureDisplay = new TextureDisplay();
 
@@ -82,17 +70,27 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     TextView poseTextView;
 
     ImageButton btnTrigger;
-    boolean takePhoto = false;
-    boolean takeVideo = false;
+    boolean isRecording = false;
     MediaPlayer _shootMP;
-    Switch btnMode;
-    Button btnTest; //btn to test new features
+
+    TextView tvModePhoto;
+    TextView tvModeRepeat;
+    TextView tvModeVideo;
+    Mode mode = Mode.PHOTO;
+
+    public enum Mode {
+        PHOTO, //last only 1 frame
+        REPEAT, //is repeated every x frame
+        VIDEO, //all the frame
+    };
 
     AppSharedPreference pref;
 
     private static final float RAD2DEG = (float) (180 / Math.PI);
 
     protected FpsMeter fpsMeter = new FpsMeter();
+
+    protected Long startTimeMs; //I want to store it here, as CsvPose and Video must be synced
 
     public RecorderRenderManager(Activity activity, Context context) {
         mActivity = activity;
@@ -110,34 +108,68 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             }
         });
 
-        btnMode = activity.findViewById(R.id.btn_recorder_switch_mode);
-        btnMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(!isVideoMode()) takeVideo = false; //stop the video capture if the user directly switch to photo mode
-                if(isVideoMode()) RecordAudio.requestAudioPermission(activity); //we are in video mode, ask the permission for later
-                renderTriggerButtonIcon();
+        tvModePhoto = activity.findViewById(R.id.btn_recorder_mode_photo);
+        tvModeRepeat = activity.findViewById(R.id.btn_recorder_mode_repeat);
+        tvModeVideo = activity.findViewById(R.id.btn_recorder_mode_video);
+
+        tvModePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mode = Mode.PHOTO;
+                renderOnClickMode();
+            }
+        });
+
+        tvModeRepeat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mode = Mode.REPEAT;
+                renderOnClickMode();
+            }
+        });
+
+        tvModeVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(recordVideoAbstract.requestPermission())
+                    mode = Mode.VIDEO;
+                renderOnClickMode();
             }
         });
 
         AppSharedPreference pref = new AppSharedPreference(context);
 
+        renderOnClickMode();
         renderTriggerButtonIcon();
 
-        btnTest = activity.findViewById(R.id.btn_recorder_test);
-//        recordVideoAbstract = new RecordVideoJcodec(mActivity);
-        recordVideoAbstract = new RecordVideo2(mActivity, pref.getRgbPreviewResolution());
-        btnTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recordVideoAbstract.toggle();
-            }
-        });
+        recordVideoAbstract = new RecordVideoImp(mActivity, pref.getRgbPreviewResolution());
     }
 
-//    protected void takePhoto() {
-//        takePhoto = true;
-//        shootSound();
-//    }
+    protected void onClickTrigger() {
+        initDir();
+        switch (this.mode) {
+            case PHOTO:
+                isRecording = true;
+                shootSound();
+                break;
+            case REPEAT:
+                isRecording = !isRecording;
+                break;
+            case VIDEO:
+                isRecording = !isRecording;
+                if(isRecording) {
+                    startTimeMs = System.currentTimeMillis();
+                    recordVideoAbstract.start(dir);
+                } else
+                    recordVideoAbstract.stop();
+                break;
+        }
+
+        if(isRecording && startTimeMs == null) //set only once after recording starts
+                startTimeMs = System.currentTimeMillis(); //I do that here instead in the update, as it must be synced with the audio recording
+
+        renderTriggerButtonIcon();
+    }
 
     protected void initDir() {
         if(dir == null) {
@@ -214,58 +246,75 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
     private void updateFrameRecording(ARFrame arFrame) {
         numFrame++;
 
-        float fps = fpsMeter.doFpsCalculate();
-
         ARPose arPose = arFrame.getCamera().getPose();
-
-        String debugInstrinsics = debugCameraInstrinsics(arFrame.getCamera());
 
         String numFrameStr = String.format("%08d", numFrame);
 
-        CsvPose csvPose = new CsvPose(numFrameStr, arPose);
-        poseTextView.setText("FPS: " + fps + "\n" + csvPose.toString() + " " + numFrame + "\n" + debugInstrinsics + "\nFrame saved:" + numFrameSaved);
+        // FIXME what returns arFrame.getTimestampNs? eg: 33302714788000 (=33302714ms when System.currentTimeMillis() = 1622076039377)
+//        Log.d(TAG, "arFrame.getTimestampNs="+arFrame.getTimestampNs() + " ms=" + arFrame.getTimestampNs()/1000000 + " currtime="+System.currentTimeMillis()+" diff="+(arFrame.getTimestampNs()/1000000-System.currentTimeMillis()));
+
+        Long currentSessionTimeMs = startTimeMs != null ? System.currentTimeMillis() - startTimeMs : null;
+
+        CsvPose csvPose = new CsvPose(numFrameStr, arPose, currentSessionTimeMs);
+        renderPoseDebugInfo(csvPose);
 
         if (arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return; //pose not ready yet
 
-        boolean videoDepth = takeVideo && pref.isDepthEnabled() && numFrame % pref.getDepthRepeat() == 0;
-        boolean videoRgbVga = takeVideo && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
-        boolean videoRgbPreview = takeVideo && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
+        boolean repeatDepth = mode == Mode.REPEAT && pref.isDepthEnabled() && numFrame % pref.getDepthRepeat() == 0;
+        boolean repeatRgbVga = mode == Mode.REPEAT && pref.isRgbVgaEnabled() && numFrame % pref.getRgbVgaRepeat() == 0;
+        boolean repeatRgbPreview = mode == Mode.REPEAT && pref.isRgbPreviewEnabled() && numFrame % pref.getRgbPreviewRepeat() == 0;
 
+        if (isRecording && (
+                mode == Mode.PHOTO
+                        || mode == Mode.REPEAT && (repeatDepth || repeatRgbVga || repeatRgbPreview)
+                        || mode == Mode.VIDEO)) {
 
-        recordVideoAbstract.update(arFrame);
-
-        if (takePhoto || videoDepth || videoRgbVga || videoRgbPreview) {
-
-            initDir(); //the 1st time or getDir() maybe nicer
             csvPoses.add(csvPose);
             numFrameSaved++;
 
-//            if(takeVideo && !recordAudioHandler.isRecoding)
-//                recordAudioHandler.startRecording(dir);
-
-            if (takePhoto || videoDepth)
+            if (mode == Mode.PHOTO || repeatDepth || mode == Mode.VIDEO)
                 ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + FN_SUFFIX_DEPTH16BIN)); // 0.001s
 
-            if (takePhoto || videoRgbVga)
+            if (mode == Mode.PHOTO || repeatRgbVga)
                 ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEVGAJPG));
 
-            if (takePhoto || videoRgbPreview)
+            if (mode == Mode.PHOTO || repeatRgbPreview)
                 ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEJPG));
+
+            if(mode == Mode.VIDEO)
+                recordVideoAbstract.update(arFrame, currentSessionTimeMs);
 
 
             //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
             //        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png")); // 0.08s
             //        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply")); //0.15s
-            //        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
+
+            if(mode == Mode.PHOTO) {
+                        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
+            }
             //        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
 
-            if(takePhoto) {
-                takePhoto = false;
+            if(mode == Mode.PHOTO) {
+                isRecording = false;
                 renderTriggerButtonIcon(); //put back normal icon as photo is taken
             }
         }
 
 
+    }
+
+    private void renderPoseDebugInfo(CsvPose csvPose) {
+        float fps = fpsMeter.doFpsCalculate();
+//        String debugInstrinsics = debugCameraInstrinsics(arFrame.getCamera());
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                poseTextView.setText("FPS: " + fps
+                        + "\n" + csvPose.toString() + " " + numFrame
+                        + "\nFrame saved:" + numFrameSaved
+                        + "\nTime:"+ (csvPose.timems ==null ? " -" : csvPose.timems/1000)); //"\n" + debugInstrinsics
+            }
+        });
     }
 
     private String debugCameraInstrinsics(ARCamera arCamera) {
@@ -300,7 +349,6 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     public void onPause() {
         writePoses();
-        recordAudioHandler.onStop();
     }
 
     protected void writePoses() {
@@ -328,28 +376,39 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         }
     }
 
-    protected void onClickTrigger() {
-        if(isVideoMode()) {
-            takeVideo = !takeVideo;
-            //TODO add "video" sound
-        } else {
-            takePhoto = true;
-            shootSound();
+
+    protected void renderOnClickMode() {
+        tvModePhoto.setPaintFlags(Paint.ANTI_ALIAS_FLAG);
+        tvModeRepeat.setPaintFlags(Paint.ANTI_ALIAS_FLAG);
+        tvModeVideo.setPaintFlags(Paint.ANTI_ALIAS_FLAG);
+
+        switch (this.mode) {
+            case PHOTO:
+                tvModePhoto.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+                break;
+            case REPEAT:
+                tvModeRepeat.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+                break;
+            case VIDEO:
+                tvModeVideo.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+                break;
         }
+
         renderTriggerButtonIcon();
     }
 
     protected void renderTriggerButtonIcon() {
-        if(isVideoMode()) {
-            if(takeVideo) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
-            else btnTrigger.setImageResource(R.drawable.ic_btn_camera_video);
-        } else {
-            if(takePhoto) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
-            else  btnTrigger.setImageResource(R.drawable.ic_btn_camera_photo);
+        switch (mode) {
+            case PHOTO:
+                if(isRecording) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
+                else  btnTrigger.setImageResource(R.drawable.ic_btn_camera_photo);
+                break;
+            case REPEAT:
+            case VIDEO:
+                if(isRecording) btnTrigger.setImageResource(R.drawable.ic_btn_camera_videorecording);
+                else btnTrigger.setImageResource(R.drawable.ic_btn_camera_video);
+                break;
         }
     }
 
-    protected boolean isVideoMode() {
-        return btnMode.isChecked();
-    }
 }

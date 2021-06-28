@@ -10,20 +10,22 @@ import javax.vecmath.Vector3d;
 import javax.vecmath.Vector4f;
 
 public class CsvPose {
-    private static final String HEADER = "frame,tx,ty,tz,qx,qy,qz,qw,yaw,pitch,roll,projection";
+    private static final String HEADER = "frame,tx,ty,tz,qx,qy,qz,qw,yaw,pitch,roll,timems";
 
     protected String frameId;
     public ARPose p;
     protected double yaw;
     protected double pitch;
     protected double roll;
+    protected Long timems;
 
     private static String DELIMITER = ",";
 
     ////north : https://github.com/google-ar/arcore-android-sdk/issues/119
-    public CsvPose(String frameId, ARPose pose) {
+    public CsvPose(String frameId, ARPose pose, Long timems) {
         this.frameId = frameId;
         this.p = pose;
+        this.timems = timems;
 
         Vector4f q = new Vector4f(pose.qx(), pose.qy(), pose.qz(), pose.qw());
         // https://answers.unity.com/questions/416169/finding-pitchrollyaw-from-quaternions.html
@@ -78,7 +80,8 @@ public class CsvPose {
                 .append(p.qw()).append(DELIMITER)
                 .append(yaw).append(DELIMITER)
                 .append(pitch).append(DELIMITER)
-                .append(roll).append(DELIMITER);
+                .append(roll).append(DELIMITER)
+                .append(timems);
 
         return sb.toString();
     }
