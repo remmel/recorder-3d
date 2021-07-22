@@ -43,6 +43,12 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     private static final String TAG = RecorderRenderManager.class.getSimpleName();
 
+    private static final int PROJ_MATRIX_OFFSET = 0;
+    private static final float PROJ_MATRIX_NEAR = 0.1f;
+    private static final float PROJ_MATRIX_FAR = 100.0f;
+    private static final float MATRIX_SCALE_SX = -1.0f;
+    private static final float MATRIX_SCALE_SY = -1.0f;
+
     public static final String FN_SUFFIX_DEPTH16BIN = "_depth16.bin";
     public static final String FN_SUFFIX_IMAGEVGAJPG = "_image_vga.jpg";
     public static final String FN_SUFFIX_IMAGEJPG = "_image.jpg";
@@ -256,7 +262,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         Long currentSessionTimeMs = startTimeMs != null ? System.currentTimeMillis() - startTimeMs : null;
 
         CsvPose csvPose = new CsvPose(numFrameStr, arPose, currentSessionTimeMs);
-        renderPoseDebugInfo(csvPose);
+        renderPoseDebugInfo(csvPose, arFrame);
 
         if (arPose.tx() == 0 || arPose.ty() == 0 || arPose.tz() == 0) return; //pose not ready yet
 
@@ -303,29 +309,31 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
     }
 
-    private void renderPoseDebugInfo(CsvPose csvPose) {
+    private void renderPoseDebugInfo(CsvPose csvPose, ARFrame arFrame) {
         float fps = fpsMeter.doFpsCalculate();
-//        String debugInstrinsics = debugCameraInstrinsics(arFrame.getCamera());
+        String debugInstrinsics = arFrame != null ? debugCameraInstrinsics(arFrame.getCamera()) : "";
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 poseTextView.setText("FPS: " + fps
                         + "\n" + csvPose.toString() + " " + numFrame
                         + "\nFrame saved:" + numFrameSaved
-                        + "\nTime:"+ (csvPose.timems ==null ? " -" : csvPose.timems/1000)); //"\n" + debugInstrinsics
+                        + "\nTime:"+ (csvPose.timems ==null ? " -" : csvPose.timems/1000)
+                        + "\n" + debugInstrinsics
+                );
             }
         });
     }
 
     private String debugCameraInstrinsics(ARCamera arCamera) {
-
+        //https://developer.huawei.com/consumer/en/doc/development/graphics-References/camera_intrinsics-0000001051140882
         ARCameraIntrinsics arCameraIntrinsics = arCamera.getCameraImageIntrinsics();
-//        float[] distortions = arCameraIntrinsics.getDistortions();
-        float[] focalLength = arCameraIntrinsics.getFocalLength();
-        float[] principalPoint = arCameraIntrinsics.getPrincipalPoint(); //9441
+//        float[] distortions = arCameraIntrinsics.getDistortions(); //0.122519,-0.229927,0.144746,-6.96E-4,-4.39E-4
+        float[] focalLength = arCameraIntrinsics.getFocalLength(); // 1072.9441 1075.7474
+        float[] principalPoint = arCameraIntrinsics.getPrincipalPoint(); //718.911 543.41327
         int[] imageSize = arCameraIntrinsics.getImageDimensions(); //1080 1440
-        float fovX = (float) (Math.atan2(imageSize[0] / 2, focalLength[0]) * RAD2DEG * 2);
-        float fovY = (float) (Math.atan2(imageSize[1] / 2, focalLength[1]) * RAD2DEG * 2);
+        float fovX = (float) (Math.atan2(imageSize[0] / 2, focalLength[0]) * RAD2DEG * 2); //67.7°
+        float fovY = (float) (Math.atan2(imageSize[1] / 2, focalLength[1]) * RAD2DEG * 2); //53.3°
 
 //        float[] projMatrix = new float[4*4];
 //        arCamera.getProjectionMatrix(projMatrix, PROJ_MATRIX_OFFSET, PROJ_MATRIX_NEAR, PROJ_MATRIX_FAR);
@@ -334,10 +342,12 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 //        float fx = imageSize[0] * projMatrix[0*4+0] / 2; //principalPoint[0] = 1440*1.4902/2=1072.944
 //        float fy = imageSize[1] * projMatrix[1*4+1] / 2; //principalPoint[1] = 1080*3.0466316/2=1645.18 ?!? seems incorrect!
 
-        return String.format("Focal Length: (%.2f, %.2f)"
-                        + "\nPrincipal Point: (%.2f, %.2f)"
-                        + "\nImage Dimensions: (%d, %d)"
-                        + "\nField of View: (%.2f˚, %.2f˚)",
+        //what is arCamera.getViewMatrix(viewMatrix,0); ?
+
+        return String.format("Focal len (%.2f, %.2f)"
+                        + " Pp (%.2f, %.2f)"
+                        + " Size (%d, %d)"
+                        + " Fov (%.2f˚, %.2f˚)",
                 focalLength[0], focalLength[1],
                 principalPoint[0], principalPoint[1],
                 imageSize[0], imageSize[1],
