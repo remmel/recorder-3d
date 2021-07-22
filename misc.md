@@ -23,9 +23,9 @@ send images to server merge depth (TSDF - linux - CPU)
 
 # Intrinsics and API image
 
-Camera Intrinsics (Honor View 20 - AR Engine : [ARCameraIntrinsics](https://developer.huawei.com/consumer/en/doc/HMSCore-References-V5/camera_intrinsics-0000001051140882-V5) + [ARCamera](https://developer.huawei.com/consumer/en/doc/development/HMSCore-Library-V5/camera-0000001050121437-V5) )
+Camera Intrinsics (Honor View 20 - AR Engine : [ARCameraIntrinsics](https://developer.huawei.com/consumer/en/doc/development/graphics-References/camera_intrinsics-0000001051140882) + [ARCamera](https://developer.huawei.com/consumer/en/doc/development/graphics-References/camera-0000001050121437) )
 - principalPoint : 718.911 543.41327 // (cx, cy)
-- imageDimensions : 1440 1080 //(width, heigh)
+- imageDimensions : 1440 1080 //(width, heigth)
 - distortions : 0.122519 -0.229927 0.144746 -6.96E-4 -4.39E-4
 - focalLength : 1072.9441 1075.7474 //(fx, fy ) in px - Why 2 values ?  
 - getProjectionMatrix : 1.4902 0 0 0 / 0 3.0466316 0 0 / 0.001512431 0.009666785 -1.002002 -1 / 0 0 -0.2002002 0
