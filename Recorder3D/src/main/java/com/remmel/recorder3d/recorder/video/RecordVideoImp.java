@@ -20,6 +20,8 @@ import java.io.File;
  * but this is using Camera2APi, not sure if I can get both RGB and Depth images at the same time:
  * - https://developer.android.com/training/camera2/multi-camera
  * - https://developer.android.com/training/camera2/multiple-camera-streams-simultaneously
+ *
+ * TODO try grafika alternative : https://stackoverflow.com/questions/47869061/providing-video-recording-functionality-with-arcore
  */
 public class RecordVideoImp extends RecordVideoAbstract {
 

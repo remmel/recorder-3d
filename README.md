@@ -28,3 +28,12 @@ Measure the distance of the center (depth) of the object to the camera (center d
 ## Android smarphone
 
 That app has only been tested on Honor View 20 which has a tof sensor. This is the cheapest Huawei phone with Tof, you can find 2nd hand around 180€.
+
+# Next
+- Improve photo quality : I should make an alternative with Camera2 API https://github.com/google-ar/arcore-android-sdk/issues/120, which allow to access camera properly
+- Improve video framerate and resolution : currently 30fps (1440x1080) or 25fps 4K (3968x2976  jpg quality 80%)
+  Use MediaRecorder to save video. Should probably use ARCore or Camera2 API
+  Or check alternative with opengl surface
+  
+# Bug
+It seems that there is an offset of 1 between rgb and depth eg: 00000182_image.jpg == 00000183_depth16.bin (check in my sync-rgbd.html)

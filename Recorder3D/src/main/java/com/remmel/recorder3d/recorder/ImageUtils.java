@@ -79,9 +79,16 @@ public class ImageUtils {
         if(image.getFormat() != ImageFormat.YUV_420_888)
             throw new RuntimeException("Expected image format is YUV_420_888, but is:"+image.getFormat());
 
-        byte[] nv21 = YUV_420_888toNV21(image);
-        IoUtils.writeYUV(f, nv21, image.getWidth(), image.getHeight());
-        Log.i(TAG, "Image YUV ("+image.getWidth()+"x"+image.getHeight()+") saved in " +f.getPath());
+        final byte[] nv21 = YUV_420_888toNV21(image);
+        final int w = image.getWidth();
+        final int h = image.getHeight();
+
+        new Thread(){
+            public void run(){
+                IoUtils.writeYUV(f, nv21, w, h);
+                Log.i(TAG, "Image YUV ("+w+"x"+h+") saved in " +f.getPath());
+            }
+        }.start();
     }
 
     public static void writeImageN21Bin(Image image , File f) {

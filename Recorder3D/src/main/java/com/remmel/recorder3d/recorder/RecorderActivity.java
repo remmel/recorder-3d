@@ -1,19 +1,22 @@
 package com.remmel.recorder3d.recorder;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.remmel.recorder3d.R;
 import com.huawei.arengine.demos.common.DisplayRotationManager;
-import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
 import com.huawei.hiar.AREnginesApk;
 import com.huawei.hiar.ARSession;
 import com.huawei.hiar.ARWorldTrackingConfig;
@@ -22,6 +25,8 @@ import com.huawei.hiar.exceptions.ARUnSupportedConfigurationException;
 import com.huawei.hiar.exceptions.ARUnavailableClientSdkTooOldException;
 import com.huawei.hiar.exceptions.ARUnavailableServiceApkTooOldException;
 import com.huawei.hiar.exceptions.ARUnavailableServiceNotInstalledException;
+import com.remmel.recorder3d.R;
+import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
 
 public class RecorderActivity extends Activity {
     private static final String TAG = RecorderActivity.class.getSimpleName();
@@ -41,6 +46,8 @@ public class RecorderActivity extends Activity {
     private boolean isRemindInstall = false;
 
     Button btnBack;
+
+    AudioManager am;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +78,35 @@ public class RecorderActivity extends Activity {
                 finish();
             }
         });
+
+        //https://stackoverflow.com/questions/31030141/implementing-audio-recording-from-bluetooth-headset
+        //android.app.IntentReceiverLeaked: Activity com.remmel.recorder3d.recorder.RecorderActivity has leaked IntentReceiver that was originally registered here. Are you missing a call to unregisterReceiver()?
+        am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+                Log.d(TAG, "Audio SCO state: " + state);
+
+                if (AudioManager.SCO_AUDIO_STATE_CONNECTED == state) {
+                    /*
+                     * Now the connection has been established to the bluetooth device.
+                     * Record audio or whatever (on another thread).With AudioRecord you can record with an object created like this:
+                     * new AudioRecord(MediaRecorder.AudioSource.MIC, 8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                     * AudioFormat.ENCODING_PCM_16BIT, audioBufferSize);
+                     *
+                     * After finishing, don't forget to unregister this receiver and
+                     * to stop the bluetooth connection with am.stopBluetoothSco();
+                     */
+                    unregisterReceiver(this);
+                }
+            }
+        }, new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_CHANGED));
+        Log.d(TAG, "starting bluetooth");
+        am.startBluetoothSco();
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -194,6 +230,7 @@ public class RecorderActivity extends Activity {
         }
         super.onDestroy();
         Log.i(TAG, "onDestroy end.");
+        am.stopBluetoothSco();
     }
 
     @Override

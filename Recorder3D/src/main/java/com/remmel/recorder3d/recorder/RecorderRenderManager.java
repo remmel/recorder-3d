@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
 import android.media.AudioManager;
+import android.media.Image;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.opengl.GLES20;
@@ -25,8 +26,10 @@ import com.huawei.hiar.ARPose;
 import com.huawei.hiar.ARSession;
 import com.remmel.recorder3d.R;
 import com.remmel.recorder3d.recorder.preferences.AppSharedPreference;
+import com.remmel.recorder3d.recorder.video.RecordAudioOnlyImp;
 import com.remmel.recorder3d.recorder.video.RecordVideoAbstract;
 import com.remmel.recorder3d.recorder.video.RecordVideoImp;
+import com.remmel.recorder3d.recorder.video.RecordVideoSurfaceImp;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,7 +151,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
         renderOnClickMode();
         renderTriggerButtonIcon();
 
-        recordVideoAbstract = new RecordVideoImp(mActivity, pref.getRgbPreviewResolution());
+        recordVideoAbstract = new RecordAudioOnlyImp(mActivity, pref.getRgbPreviewResolution());
     }
 
     protected void onClickTrigger() {
@@ -278,8 +281,12 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             csvPoses.add(csvPose);
             numFrameSaved++;
 
-            if (mode == Mode.PHOTO || repeatDepth || mode == Mode.VIDEO)
-                ImageUtils.writeImageDepth16(arFrame.acquireDepthImage(), new File(dir, numFrameStr + FN_SUFFIX_DEPTH16BIN)); // 0.001s
+            Image depthImage = arFrame.acquireDepthImage();
+            Image previewImage = arFrame.acquirePreviewImage();
+
+            if (mode == Mode.PHOTO || repeatDepth || mode == Mode.VIDEO) {
+                ImageUtils.writeImageDepth16(depthImage, new File(dir, numFrameStr + FN_SUFFIX_DEPTH16BIN)); // 0.001s
+            }
 
             if (mode == Mode.PHOTO || repeatRgbVga)
                 ImageUtils.writeImageYuvJpg(arFrame.acquireCameraImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEVGAJPG));
@@ -287,16 +294,20 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
             if (mode == Mode.PHOTO || repeatRgbPreview)
                 ImageUtils.writeImageYuvJpg(arFrame.acquirePreviewImage(), new File(dir, numFrameStr + FN_SUFFIX_IMAGEJPG));
 
-            if(mode == Mode.VIDEO)
-                recordVideoAbstract.update(arFrame, currentSessionTimeMs);
 
-
-            //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.007s
+            //          writeImageYuvJpg  //1440x1080: 0.04s (100%) 0.03s (97%) 0.02s (75%) / 3968x2976: 0.09s (75%) 0.55s (0%)
+            //        ImageUtils.writeImageN21Bin(arFrame.acquirePreviewImage(), new File(dir, numFrameStr+"_image.bin")); //0.006s
             //        ImageUtils.writeImageDepthNicePng(arFrame.acquireDepthImage(), new File(dir, numFrameStr+"_depth.png")); // 0.08s
             //        ImageUtils.writePly(arFrame.acquireDepthImage(), arFrame.acquirePreviewImage(), new File(dir, numFrameStr+".ply")); //0.15s
 
+            if(mode == Mode.VIDEO) {
+                recordVideoAbstract.update(arFrame, currentSessionTimeMs);
+                ImageUtils.writeImageYuvJpg(previewImage, new File(dir, numFrameStr + FN_SUFFIX_IMAGEJPG));
+            }
+
+
             if(mode == Mode.PHOTO) {
-                        ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
+                    ImageUtils.writeObj(arFrame.acquireSceneMesh(), new File(dir, "scene_mesh_"+numFrame+".obj"));
             }
             //        ImageUtils.writePly(arFrame.acquirePointCloud(), new File(dir, "point_cloud_"+numFrame+".ply"));
 
@@ -331,7 +342,7 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 //        float[] distortions = arCameraIntrinsics.getDistortions(); //0.122519,-0.229927,0.144746,-6.96E-4,-4.39E-4
         float[] focalLength = arCameraIntrinsics.getFocalLength(); // 1072.9441 1075.7474
         float[] principalPoint = arCameraIntrinsics.getPrincipalPoint(); //718.911 543.41327
-        int[] imageSize = arCameraIntrinsics.getImageDimensions(); //1080 1440
+        int[] imageSize = arCameraIntrinsics.getImageDimensions(); //1440 1080
         float fovX = (float) (Math.atan2(imageSize[0] / 2, focalLength[0]) * RAD2DEG * 2); //67.7°
         float fovY = (float) (Math.atan2(imageSize[1] / 2, focalLength[1]) * RAD2DEG * 2); //53.3°
 
@@ -344,13 +355,14 @@ public class RecorderRenderManager implements GLSurfaceView.Renderer {
 
         //what is arCamera.getViewMatrix(viewMatrix,0); ?
 
-        return String.format("Focal len (%.2f, %.2f)"
+        return String.format(""
+                        + "Size (%d, %d)"
+                        + " Focal len (%.2f, %.2f)"
                         + " Pp (%.2f, %.2f)"
-                        + " Size (%d, %d)"
                         + " Fov (%.2f˚, %.2f˚)",
+                imageSize[0], imageSize[1],
                 focalLength[0], focalLength[1],
                 principalPoint[0], principalPoint[1],
-                imageSize[0], imageSize[1],
                 fovX,
                 fovY
         );

@@ -40,7 +40,7 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.2.0'
     implementation 'javax.vecmath:vecmath:1.5.2'
     implementation 'de.javagl:obj:0.3.0'
-    implementation 'com.huawei.hms:arenginesdk:3.0.0.11'  //https://developer.huawei.com/consumer/en/doc/development/HMSCore-Guides-V5/version-change-history-0000001050132857-V5
+    implementation 'com.huawei.hms:arenginesdk:3.0.0.11'  //https://developer.huawei.com/consumer/en/doc/development/graphics-Guides/version-change-history-0000001050132857
     testImplementation 'junit:junit:4.12'
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'

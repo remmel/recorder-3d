@@ -50,7 +50,7 @@ public class IoUtils {
         try {
             OutputStream os = new FileOutputStream(f);
             YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, width, height, null);
-            yuv.compressToJpeg(new Rect(0, 0, width, height), 100, os);
+            yuv.compressToJpeg(new Rect(0, 0, width, height), 95, os);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Log.e(TAG, "Fail saving file:" + f.toString());
